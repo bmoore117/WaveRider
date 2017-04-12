@@ -15,6 +15,7 @@ object Rider {
 
   var macroTrend:TrendType.TrendType = TrendType.FLAT
   var microTrend:TrendType.TrendType = TrendType.FLAT
+  var isCross:Boolean = false
 
   val tradeCost = 1
   val trendMinStrength = 1
@@ -35,7 +36,7 @@ object Rider {
   def getNextTick(iteration: Int): Double = {
 
     if(iteration > 10 && iteration < 18) {
-       scaleFactor += 1
+      scaleFactor += 1
     }
 
     if(iteration > 28 && iteration < 36) {
@@ -83,9 +84,12 @@ object Rider {
     var upTrendReset = false
 
     for(i <- 1 to 40) {
+      isCross = false
       val tick = getNextTick(i)
       println("Iteration: " + i)
       println("Tick price: " + tick)
+      println("Last high: " + lastHigh)
+      println("Last low: " + lastLow)
 
       updateTrends(tick)
 
@@ -98,16 +102,12 @@ object Rider {
           trendStrength = 0
           downtrendReset = false
           upTrendReset = true
+          isCross = true
         }
 
         //update and display
         trendStrength = trendStrength + (tick - lastTick)
         println("Trend Strength: " + trendStrength)
-
-        //logging purposes.
-        if(trendStrength > trendMinStrength) {
-          println("Uptrend confirmed")
-        }
 
         //The market was going down, but now since trendStrength is greater than the noise threshold, we have confirmed
         //it to be on an upswing. Sell high
@@ -115,9 +115,14 @@ object Rider {
           sell(tick)
         }
 
+        if(macroTrend == TrendType.UP) {
+          buy(tick)
+        }
+
         //mark that the market is now high
         if(trendStrength > trendMinStrength) {
           microTrend = TrendType.UP
+          println("microTrend: " + microTrend)
         }
       } else if (tick < lastTick) {
 
@@ -128,16 +133,12 @@ object Rider {
           trendStrength = 0
           downtrendReset = true
           upTrendReset = false
+          isCross = true
         }
 
         //update and display
         trendStrength = trendStrength + math.abs(tick - lastTick)
         println("Trend Strength: " + trendStrength)
-
-        //logging purposes
-        if(trendStrength > trendMinStrength) {
-          println("Downtrend confirmed")
-        }
 
         //The market was going up, but now since trendStrength is greater than the noise threshold, we have confirmed
         //it to be on a downturn. Buy low
@@ -145,8 +146,13 @@ object Rider {
           buy(tick)
         }
 
+        if(macroTrend == TrendType.DOWN) {
+          sell(tick);
+        }
+
         if(trendStrength > trendMinStrength) {
           microTrend = TrendType.DOWN
+          println("microTrend: " + microTrend)
         }
       }
       lastTick = tick
@@ -172,11 +178,12 @@ object Rider {
     */
   def updateTrends(price: Double): Unit = {
 
-    if (priceBoundLine.nonEmpty) {
+    if (priceBoundLine.length > 6) {
 
       val priceSum = priceBoundLine.foldLeft(0.0)((total, price) => price + total)
       val meanPrice = priceSum / priceBoundLine.length
       val stdDev = math.sqrt(priceBoundLine.map(_ - meanPrice).map(t => t * t).sum / priceBoundLine.length)
+      println("std dev: " + stdDev)
 
       // check to see whether we have broken out of oscillation. We have done so if the current price is outside the
       // last high or low +- the standard dev for the last n prices
@@ -189,12 +196,22 @@ object Rider {
           macroTrend = TrendType.DOWN
         }
 
+        lastHigh = price
+        lastLow = price
+
         priceBoundLine.clear()
       } else {
         macroTrend = TrendType.FLAT //TODO should this require several prices in bounds?
       }
     }
+    println("macroTrend: " + macroTrend)
 
     priceBoundLine.enqueue(price)
+  }
+
+  def decideTrade(): Unit = {
+    if(isCross) {
+
+    }
   }
 }
