@@ -20,6 +20,11 @@ object Rider {
   val trendMinStrength = 1
 
   val priceBoundLine = new mutable.Queue[Double]()
+  var lastHigh:Double = 0.0
+  var lastLow:Double = 0.0
+
+
+  var scaleFactor:Int = _
 
   /**
     * Simulates the market using a sine wave
@@ -28,7 +33,16 @@ object Rider {
     * @return
     */
   def getNextTick(iteration: Int): Double = {
-    math.sin(iteration) + 1 //
+
+    if(iteration > 10 && iteration < 18) {
+       scaleFactor += 1
+    }
+
+    if(iteration > 28 && iteration < 36) {
+      scaleFactor -= 1
+    }
+
+    (math.sin(iteration) + 1) + scaleFactor
   }
 
   /**
@@ -68,7 +82,7 @@ object Rider {
     var downtrendReset = false
     var upTrendReset = false
 
-    for(i <- 1 to 20) {
+    for(i <- 1 to 40) {
       val tick = getNextTick(i)
       println("Iteration: " + i)
       println("Tick price: " + tick)
@@ -103,7 +117,7 @@ object Rider {
 
         //mark that the market is now high
         if(trendStrength > trendMinStrength) {
-          microTrend == TrendType.UP
+          microTrend = TrendType.UP
         }
       } else if (tick < lastTick) {
 
@@ -132,10 +146,17 @@ object Rider {
         }
 
         if(trendStrength > trendMinStrength) {
-          microTrend == TrendType.DOWN
+          microTrend = TrendType.DOWN
         }
       }
       lastTick = tick
+
+      if(tick > lastHigh) {
+        lastHigh = tick
+      } else if(tick < lastLow) {
+        lastLow = tick
+      }
+
       println("")
     }
 
@@ -145,7 +166,7 @@ object Rider {
   }
 
   /**
-    * Called when we have detected a cross, to update the bounds for high or low price. Automatically sets the
+    * Called to update the bounds for high or low price. Automatically sets the
     * macroTrend if it detects that we have crossed out
     * @param price
     */
@@ -158,20 +179,22 @@ object Rider {
       val stdDev = math.sqrt(priceBoundLine.map(_ - meanPrice).map(t => t * t).sum / priceBoundLine.length)
 
       // check to see whether we have broken out of oscillation. We have done so if the current price is outside the
-      // standard dev for the last n prices
-      if (math.abs(meanPrice - price) > stdDev * 9) {
+      // last high or low +- the standard dev for the last n prices
+      if(price > lastHigh + stdDev || price < lastLow - stdDev) {//if (math.abs(meanPrice - price) > stdDev * 9) {
 
         if (microTrend == TrendType.UP) {
           macroTrend = TrendType.UP
         }
-        else {
+        else if(microTrend == TrendType.DOWN) {
           macroTrend = TrendType.DOWN
         }
 
         priceBoundLine.clear()
       } else {
-        priceBoundLine.enqueue(price)
+        macroTrend = TrendType.FLAT //TODO should this require several prices in bounds?
       }
     }
+
+    priceBoundLine.enqueue(price)
   }
 }
