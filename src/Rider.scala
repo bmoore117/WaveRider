@@ -24,7 +24,6 @@ object Rider {
   var lastHigh:Double = 0.0
   var lastLow:Double = 0.0
 
-
   var scaleFactor:Int = _
 
   /**
@@ -78,10 +77,13 @@ object Rider {
 
     var trendStrength = 0.0
     var lastTick = 0.0
-    var lastStatus = ""
 
     var downtrendReset = false
     var upTrendReset = false
+
+    lastLow = getNextTick(0)
+    lastHigh = getNextTick(0)
+    priceBoundLine.enqueue(0)
 
     for(i <- 1 to 40) {
       isCross = false
@@ -178,32 +180,47 @@ object Rider {
     */
   def updateTrends(price: Double): Unit = {
 
-    if (priceBoundLine.length > 6) {
+    var stdDev = 0.0
+
+    if (priceBoundLine.size > 1) {
 
       val priceSum = priceBoundLine.foldLeft(0.0)((total, price) => price + total)
       val meanPrice = priceSum / priceBoundLine.length
-      val stdDev = math.sqrt(priceBoundLine.map(_ - meanPrice).map(t => t * t).sum / priceBoundLine.length)
-      println("std dev: " + stdDev)
+      stdDev = math.sqrt(priceBoundLine.map(_ - meanPrice).map(t => t * t).sum / priceBoundLine.length)
 
       // check to see whether we have broken out of oscillation. We have done so if the current price is outside the
       // last high or low +- the standard dev for the last n prices
-      if(price > lastHigh + stdDev || price < lastLow - stdDev) {//if (math.abs(meanPrice - price) > stdDev * 9) {
 
-        if (microTrend == TrendType.UP) {
+      val upwardsBreak = price > lastHigh + stdDev
+      val downwardsBreak = price < lastLow - stdDev
+
+      if(upwardsBreak || downwardsBreak) {//if (math.abs(meanPrice - price) > stdDev * 9) {
+
+        if (microTrend == TrendType.UP && upwardsBreak) {
           macroTrend = TrendType.UP
+          lastHigh = price
+          lastLow = price
+          priceBoundLine.clear()
         }
-        else if(microTrend == TrendType.DOWN) {
+        else if(microTrend == TrendType.DOWN && downwardsBreak) {
           macroTrend = TrendType.DOWN
+          lastHigh = price
+          lastLow = price
+          priceBoundLine.clear()
         }
 
-        lastHigh = price
-        lastLow = price
-
-        priceBoundLine.clear()
       } else {
+        if(macroTrend != TrendType.FLAT) {
+          lastHigh = price
+          lastLow = price
+          priceBoundLine.clear()
+        }
+
         macroTrend = TrendType.FLAT //TODO should this require several prices in bounds?
       }
     }
+
+    println("std dev: " + stdDev)
     println("macroTrend: " + macroTrend)
 
     priceBoundLine.enqueue(price)
