@@ -9,7 +9,7 @@ class MovingAverage {
   var value:Double = _
   var avgType:MovingAverage.AvgType.AvgType = _
 
-  override def toString = s"MovingAverage(timePeriod=$timePeriod, value=$value)"
+  override def toString = s"MovingAverage($timePeriod, $value, $avgType)"
 }
 
 object MovingAverage {
