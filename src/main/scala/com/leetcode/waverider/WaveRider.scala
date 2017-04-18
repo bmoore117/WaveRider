@@ -123,7 +123,7 @@ object WaveRider {
     None
   }
 
-  def ema(timePeriod: Int, avgType: AvgType): Option[MovingAverage] = {
+  def movingAverage(timePeriod: Int, avgType: AvgType): Option[MovingAverage] = {
 
     if (marketActivity.length >= timePeriod) {
       val days = marketActivity.slice(marketActivity.length - timePeriod, marketActivity.length)
