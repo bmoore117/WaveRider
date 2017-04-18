@@ -1,3 +1,5 @@
+package com.leetcode.waverider
+
 import java.util.Date
 
 /**

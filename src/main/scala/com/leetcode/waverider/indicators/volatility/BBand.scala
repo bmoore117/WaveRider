@@ -1,3 +1,5 @@
+package com.leetcode.waverider.indicators.volatility
+
 /**
   * Created by Benjamin on 4/15/2017.
   */

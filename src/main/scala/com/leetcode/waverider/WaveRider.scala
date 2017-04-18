@@ -1,8 +1,11 @@
+package com.leetcode.waverider
+
 import java.io.File
 import java.text.SimpleDateFormat
 
 import com.github.tototoshi.csv._
-import com.tictactec.ta._
+import com.leetcode.waverider.indicators.trend.MovingAverage
+import com.leetcode.waverider.indicators.volatility.{AvgTrueRange, BBand}
 import com.tictactec.ta.lib.{Core, MAType, MInteger, RetCode}
 
 import scala.collection.mutable.ArrayBuffer
@@ -28,12 +31,15 @@ object WaveRider {
           val mktDay = initTypes(day)
           marketActivity.append(mktDay)
 
-          println("Date: " + day(0))
+          println("Date: " + day.head)
 
           val band = bollinger()
 
-          band.foreach(band => println(band.toString))
+          //band.foreach(band => println(band.toString))
 
+          val atr = averageTrueRange()
+
+          atr.foreach(range => println("ATR: " + range.value))
         })
       }
     } else {
@@ -47,7 +53,7 @@ object WaveRider {
     val format = new SimpleDateFormat("yyyy-MM-DD")
     val mktDay = new MarketDay
 
-    mktDay.date = format.parse(day(0))
+    mktDay.date = format.parse(day.head)
     mktDay.open = day(1).toDouble
     mktDay.high = day(2).toDouble
     mktDay.low = day(3).toDouble
@@ -72,21 +78,50 @@ object WaveRider {
       val begin = new MInteger
       val nbElement = new MInteger
 
-      //RetCode re = c.bbands(startIdx, endIdx, inReal, optInTimePeriod, optInNbDevUp, optInNbDevDn, optInMAType, outBegIdx, outNBElement, outRealUpperBand, outRealMiddleBand, outRealLowerBand)
       val retCode = core.bbands(0, TIME_PERIOD - 1, prices, TIME_PERIOD, DISTANCE_DEVIATIONS, DISTANCE_DEVIATIONS, MAType.Sma, begin, nbElement, upperBand, avg, lowerBand)
 
       if(retCode == RetCode.Success) {
         val band = new BBand
-        band.upperBand = upperBand(0)
-        band.avg = avg(0)
-        band.lowerBand = lowerBand(0)
+        band.upperBand = upperBand.head
+        band.avg = avg.head
+        band.lowerBand = lowerBand.head
         band.bandDistance = DISTANCE_DEVIATIONS
 
         return Some(band)
-      } else {
-        return None
       }
     }
-    return None
+
+    None
+  }
+
+  def averageTrueRange(): Option[AvgTrueRange] = {
+    val TIME_PERIOD = 14
+
+    if(marketActivity.length > TIME_PERIOD) {
+      val days = marketActivity.slice(marketActivity.length - TIME_PERIOD, marketActivity.length)
+
+      val highs = days.map(day => day.high).toArray
+      val lows = days.map(day => day.low).toArray
+      val close = days.map(day => day.close).toArray
+
+      val result = new Array[Double](1)
+
+      //TIME_PERIOD - 1 in lookback period, as array is indexed 0-13
+      val retCode = core.atr(0, TIME_PERIOD - 1, highs, lows, close, TIME_PERIOD - 1, new MInteger, new MInteger, result)
+
+      if(retCode == RetCode.Success) {
+        val atr = new AvgTrueRange
+
+        atr.value = result.head
+
+        return Some(atr)
+      }
+    }
+
+    None
+  }
+
+  def ema200: Option[MovingAverage] = {
+    None
   }
 }
