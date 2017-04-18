@@ -35,13 +35,18 @@ object WaveRider {
 
           println("Date: " + day.head)
 
-          val band = bollinger()
+          //val band = bollinger()
 
           //band.foreach(band => println(band.toString))
 
-          val atr = averageTrueRange()
+          //val atr = averageTrueRange()
 
-          atr.foreach(range => println("ATR: " + range.value))
+          //atr.foreach(range => println("ATR: " + range.value))
+
+          val res = macd()
+
+          res.foreach(set => set.toString)
+
         })
       }
     } else {
@@ -154,13 +159,13 @@ object WaveRider {
     None
   }
 
-  def macd: Option[MACD] = {
+  def macd(): Option[MACD] = {
 
     val SLOW_TIME_PERIOD = 26
     val FAST_TIME_PERIOD = 12
     val SIGNAL_PERIOD = 9
 
-    if (marketActivity.length > SLOW_TIME_PERIOD) {
+    if (marketActivity.length >= SLOW_TIME_PERIOD) {
       val days = marketActivity.slice(marketActivity.length - SLOW_TIME_PERIOD, marketActivity.length)
 
       val close = days.map(day => day.close).toArray
