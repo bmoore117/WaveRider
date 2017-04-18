@@ -4,7 +4,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 
 import com.github.tototoshi.csv._
-import com.leetcode.waverider.indicators.trend.MovingAverage
+import com.leetcode.waverider.indicators.trend.{MACD, MovingAverage}
 import com.leetcode.waverider.indicators.volatility.{AvgTrueRange, BBand}
 import com.tictactec.ta.lib.{Core, MAType, MInteger, RetCode}
 
@@ -122,6 +122,44 @@ object WaveRider {
   }
 
   def ema200: Option[MovingAverage] = {
+    None
+  }
+
+  def macd: Option[MACD] = {
+
+    val SLOW_TIME_PERIOD = 26
+    val FAST_TIME_PERIOD = 12
+    val SIGNAL_PERIOD = 9
+
+    if(marketActivity.length > SLOW_TIME_PERIOD) {
+      val days = marketActivity.slice(marketActivity.length - SLOW_TIME_PERIOD, marketActivity.length)
+
+      val highs = days.map(day => day.high).toArray
+      val lows = days.map(day => day.low).toArray
+      val close = days.map(day => day.close).toArray
+
+      val macd = new Array[Double](1)
+      val macdSignal = new Array[Double](1)
+      val macdHist = new Array[Double](1)
+
+      //TIME_PERIOD - 1 in lookback period, as array is indexed 0-13
+      val retCode = core.macd(0, SLOW_TIME_PERIOD - 1, close, FAST_TIME_PERIOD, SLOW_TIME_PERIOD, SIGNAL_PERIOD, new MInteger, new MInteger, macd, macdSignal, macdHist)
+
+      if(retCode == RetCode.Success) {
+        val macdObj = new MACD
+
+        macdObj.fastPeriod = FAST_TIME_PERIOD
+        macdObj.slowPeriod = SLOW_TIME_PERIOD
+        macdObj.signalPeriod = SIGNAL_PERIOD
+
+        macdObj.macd = macd.head
+        macdObj.macdSignal = macdSignal.head
+        macdObj.macdHist = macdHist.head
+
+        return Some(macdObj)
+      }
+    }
+
     None
   }
 }
