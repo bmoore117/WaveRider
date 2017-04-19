@@ -4,6 +4,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 
 import com.github.tototoshi.csv._
+import com.leetcode.waverider.indicators.momentum.RSI
 import com.leetcode.waverider.indicators.trend.MovingAverage.AvgType
 import com.leetcode.waverider.indicators.trend.MovingAverage.AvgType.AvgType
 import com.leetcode.waverider.indicators.trend.{MACD, MovingAverage}
@@ -14,6 +15,13 @@ import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by Benjamin on 4/15/2017.
+  *
+  *
+  * Indicators for trend trading: moving averages,
+  * Indicators for range trading: BBands, ADX. ADX identifies whether range bound, BBands identify range
+  *
+  * General utility: average true range, indicates overall volatility
+  *
   */
 object WaveRider {
 
@@ -47,9 +55,13 @@ object WaveRider {
 
           //res.foreach(set => set.toString)
 
-          val ema = movingAverage(10, AvgType.EMA)
+          //val ema = movingAverage(10, AvgType.EMA)
 
-          ema.foreach(avg => println(avg.toString))
+          //ema.foreach(avg => println(avg.toString))
+
+          val rsi = RSI()
+
+          rsi.foreach(item => println(item.toString))
 
         })
       }
@@ -195,6 +207,33 @@ object WaveRider {
         macdObj.macdHist = macdHist.head
 
         return Some(macdObj)
+      }
+    }
+
+    None
+  }
+
+  def RSI(): Option[RSI] = {
+
+    val TIME_PERIOD = 14
+
+    //must include 1 extra day, as first element in array needs a prior element
+    if (marketActivity.length > TIME_PERIOD) {
+      val days = marketActivity.slice(marketActivity.length - TIME_PERIOD - 1, marketActivity.length)
+
+      val closingPrices = days.map(day => day.close).toArray
+
+      val outRSI = new Array[Double](1)
+
+      val retCode = core.rsi(0, closingPrices.length - 1, closingPrices, TIME_PERIOD, new MInteger, new MInteger, outRSI)
+
+      if (retCode == RetCode.Success) {
+        val rsi = new RSI
+
+        rsi.timePeriod = TIME_PERIOD
+        rsi.value = outRSI.head
+
+        return Some(rsi)
       }
     }
 
