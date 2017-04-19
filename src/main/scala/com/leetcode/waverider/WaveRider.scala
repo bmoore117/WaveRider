@@ -21,13 +21,15 @@ import scala.collection.mutable.ArrayBuffer
   * Indicators for trend trading: moving averages, RSI, MACD
   * Indicators for range trading: BBands, ADX, MACD. ADX identifies whether range bound, BBands identify range, MACD can signal reversal
   *
-  * General utility: average true range, indicates overall volatility
+  * General utility: average true range, indicates overall volatility. On-balance volume, indicates future trend breakout
   *
   */
 object WaveRider {
 
-  val marketActivity = new ArrayBuffer[MarketDay]()
+  val marketActivity = new ArrayBuffer[RawMarketDay]()
   val core = new Core
+
+  val analyzedMarketDays = new ArrayBuffer[AnalyzedMarketDay]()
 
   def main(args: Array[String]): Unit = {
     if (args.length == 1) {
@@ -44,25 +46,27 @@ object WaveRider {
 
           println("Date: " + day.head)
 
-          //val band = bollinger()
-
-          //band.foreach(band => println(band.toString))
-
-          //val atr = averageTrueRange()
-
-          //atr.foreach(range => println("ATR: " + range.value))
-
-          //val res = macd()
-
-          //res.foreach(set => set.toString)
-
-          //val ema = movingAverage(10, AvgType.EMA)
-
-          //ema.foreach(avg => println(avg.toString))
-
           val rsi = RSI()
 
-          rsi.foreach(item => println(item.toString))
+          val macd_result = macd()
+
+          val ema200 = movingAverage(200, AvgType.EMA)
+          val ema100 = movingAverage(100, AvgType.EMA)
+          val ema50 = movingAverage(50, AvgType.EMA)
+          val ema25 = movingAverage(25, AvgType.EMA)
+          val ema15 = movingAverage(15, AvgType.EMA)
+          val ema10 = movingAverage(10, AvgType.EMA)
+          val ema5 = movingAverage(5, AvgType.EMA)
+
+          val atr = averageTrueRange()
+
+          val band = bollinger()
+
+          val obv = OBV()
+
+          val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv)
+
+          analyzedMarketDays.append(analyzedDay)
 
         })
       }
@@ -72,10 +76,10 @@ object WaveRider {
   }
 
 
-  def initTypes(day: Seq[String]): MarketDay = {
+  def initTypes(day: Seq[String]): RawMarketDay = {
 
     val format = new SimpleDateFormat("yyyy-MM-DD")
-    val mktDay = new MarketDay
+    val mktDay = new RawMarketDay
 
     mktDay.date = format.parse(day.head)
     mktDay.open = day(1).toDouble

@@ -5,7 +5,7 @@ import java.util.Date
 /**
   * Created by Benjamin on 4/15/2017.
   */
-class MarketDay {
+class RawMarketDay {
 
   var date:Date = _
   var open:Double = _
