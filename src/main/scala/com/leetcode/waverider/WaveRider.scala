@@ -9,6 +9,7 @@ import com.leetcode.waverider.indicators.trend.MovingAverage.AvgType
 import com.leetcode.waverider.indicators.trend.MovingAverage.AvgType.AvgType
 import com.leetcode.waverider.indicators.trend.{MACD, MovingAverage}
 import com.leetcode.waverider.indicators.volatility.{AvgTrueRange, BBand}
+import com.leetcode.waverider.indicators.volume.OnBalanceVolume
 import com.tictactec.ta.lib.{Core, MAType, MInteger, RetCode}
 
 import scala.collection.mutable.ArrayBuffer
@@ -17,8 +18,8 @@ import scala.collection.mutable.ArrayBuffer
   * Created by Benjamin on 4/15/2017.
   *
   *
-  * Indicators for trend trading: moving averages,
-  * Indicators for range trading: BBands, ADX. ADX identifies whether range bound, BBands identify range
+  * Indicators for trend trading: moving averages, RSI, MACD
+  * Indicators for range trading: BBands, ADX, MACD. ADX identifies whether range bound, BBands identify range, MACD can signal reversal
   *
   * General utility: average true range, indicates overall volatility
   *
@@ -237,6 +238,10 @@ object WaveRider {
       }
     }
 
+    None
+  }
+
+  def OBV(): Option[OnBalanceVolume] = {
     None
   }
 }
