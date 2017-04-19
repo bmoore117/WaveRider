@@ -39,13 +39,13 @@ object WaveRider {
 
           //band.foreach(band => println(band.toString))
 
-          //val atr = averageTrueRange()
+          val atr = averageTrueRange()
 
-          //atr.foreach(range => println("ATR: " + range.value))
+          atr.foreach(range => println("ATR: " + range.value))
 
-          val res = macd()
+          //val res = macd()
 
-          res.foreach(set => set.toString)
+          //res.foreach(set => set.toString)
 
         })
       }
@@ -85,7 +85,7 @@ object WaveRider {
       val begin = new MInteger
       val nbElement = new MInteger
 
-      val retCode = core.bbands(0, TIME_PERIOD - 1, prices, TIME_PERIOD, DISTANCE_DEVIATIONS, DISTANCE_DEVIATIONS, MAType.Sma, begin, nbElement, upperBand, avg, lowerBand)
+      val retCode = core.bbands(0, prices.length - 1, prices, TIME_PERIOD, DISTANCE_DEVIATIONS, DISTANCE_DEVIATIONS, MAType.Sma, begin, nbElement, upperBand, avg, lowerBand)
 
       if (retCode == RetCode.Success) {
         val band = new BBand
@@ -104,8 +104,9 @@ object WaveRider {
   def averageTrueRange(): Option[AvgTrueRange] = {
     val TIME_PERIOD = 14
 
+    //strictly greater than, as we need 15 points for a 14 day ATR: we need 1 point past the last, as TR requires it
     if (marketActivity.length > TIME_PERIOD) {
-      val days = marketActivity.slice(marketActivity.length - TIME_PERIOD, marketActivity.length)
+      val days = marketActivity.slice(marketActivity.length - TIME_PERIOD - 1, marketActivity.length)
 
       val highs = days.map(day => day.high).toArray
       val lows = days.map(day => day.low).toArray
@@ -113,8 +114,7 @@ object WaveRider {
 
       val result = new Array[Double](1)
 
-      //TIME_PERIOD - 1 in lookback period, as array is indexed 0-13
-      val retCode = core.atr(0, TIME_PERIOD - 1, highs, lows, close, TIME_PERIOD - 1, new MInteger, new MInteger, result)
+      val retCode = core.atr(0, days.length - 1, highs, lows, close, TIME_PERIOD, new MInteger, new MInteger, result)
 
       if (retCode == RetCode.Success) {
         val atr = new AvgTrueRange
@@ -165,8 +165,10 @@ object WaveRider {
     val FAST_TIME_PERIOD = 12
     val SIGNAL_PERIOD = 9
 
-    if (marketActivity.length >= SLOW_TIME_PERIOD) {
-      val days = marketActivity.slice(marketActivity.length - SLOW_TIME_PERIOD, marketActivity.length)
+    val TOTAL_PERIODS = SLOW_TIME_PERIOD + SIGNAL_PERIOD
+
+    if (marketActivity.length >= TOTAL_PERIODS) {
+      val days = marketActivity.slice(marketActivity.length - TOTAL_PERIODS, marketActivity.length)
 
       val close = days.map(day => day.close).toArray
 
@@ -175,7 +177,7 @@ object WaveRider {
       val macdHist = new Array[Double](1)
 
       //TIME_PERIOD - 1 in lookback period, as array is indexed 0-13
-      val retCode = core.macd(0, SLOW_TIME_PERIOD - 1, close, FAST_TIME_PERIOD, SLOW_TIME_PERIOD, SIGNAL_PERIOD, new MInteger, new MInteger, macd, macdSignal, macdHist)
+      val retCode = core.macd(0, close.length - 1, close, FAST_TIME_PERIOD, SLOW_TIME_PERIOD, SIGNAL_PERIOD, new MInteger, new MInteger, macd, macdSignal, macdHist)
 
       if (retCode == RetCode.Success) {
         val macdObj = new MACD
