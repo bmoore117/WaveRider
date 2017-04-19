@@ -39,13 +39,17 @@ object WaveRider {
 
           //band.foreach(band => println(band.toString))
 
-          val atr = averageTrueRange()
+          //val atr = averageTrueRange()
 
-          atr.foreach(range => println("ATR: " + range.value))
+          //atr.foreach(range => println("ATR: " + range.value))
 
           //val res = macd()
 
           //res.foreach(set => set.toString)
+
+          val ema = movingAverage(10, AvgType.EMA)
+
+          ema.foreach(avg => println(avg.toString))
 
         })
       }
@@ -140,19 +144,19 @@ object WaveRider {
       var retCode:RetCode = null
 
       if(avgType == AvgType.EMA) {
-        retCode = core.ema(0, timePeriod - 1, closingPrices, timePeriod, new MInteger, new MInteger, avg)
+        retCode = core.ema(0, closingPrices.length - 1, closingPrices, timePeriod, new MInteger, new MInteger, avg)
       } else {
-        retCode = core.sma(0, timePeriod - 1, closingPrices, timePeriod, new MInteger, new MInteger, avg)
+        retCode = core.sma(0, closingPrices.length - 1, closingPrices, timePeriod, new MInteger, new MInteger, avg)
       }
 
       if (retCode == RetCode.Success) {
-        val ema = new MovingAverage
+        val ma = new MovingAverage
 
-        ema.avgType = avgType
-        ema.timePeriod = timePeriod
-        ema.value = avg.head
+        ma.avgType = avgType
+        ma.timePeriod = timePeriod
+        ma.value = avg.head
 
-        return Some(ema)
+        return Some(ma)
       }
     }
 
