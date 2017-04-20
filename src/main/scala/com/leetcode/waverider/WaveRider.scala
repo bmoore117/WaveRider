@@ -86,7 +86,8 @@ object WaveRider {
     mktDay.high = day(2).toDouble
     mktDay.low = day(3).toDouble
     mktDay.close = day(4).toDouble
-    mktDay.adjustedClose = day(5).toDouble
+    mktDay.volume = day(5).toInt
+    mktDay.adjustedClose = day(6).toDouble
 
     mktDay
   }
@@ -246,6 +247,36 @@ object WaveRider {
   }
 
   def OBV(): Option[OnBalanceVolume] = {
+
+    if(marketActivity.length > 1 && analyzedMarketDays.nonEmpty) {
+
+      val days = marketActivity.slice(marketActivity.length - 2, marketActivity.length)
+
+      val prices = days.map(day => day.close)
+      val volume = days.map(day => day.volume)
+
+      val yesterdayOBV = analyzedMarketDays.last.onBalanceVolume
+
+      val todayOBV = new OnBalanceVolume
+
+      yesterdayOBV match {
+        case Some(obv) =>
+          if(prices.head > prices.last) {
+            todayOBV.value = obv.value + volume.last
+          } else if(prices.head < prices.last) {
+            todayOBV.value = obv.value - volume.last
+          }
+        case None =>
+          if(prices.head > prices.last) {
+            todayOBV.value = volume.last
+          } else if(prices.head < prices.last) {
+            todayOBV.value = -volume.last
+          }
+      }
+
+      return Some(todayOBV)
+    }
+
     None
   }
 }

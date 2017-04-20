@@ -12,6 +12,7 @@ class RawMarketDay {
   var high:Double = _
   var low:Double = _
   var close:Double = _
+  var volume:Int = _
   var adjustedClose:Double = _
 
 }
