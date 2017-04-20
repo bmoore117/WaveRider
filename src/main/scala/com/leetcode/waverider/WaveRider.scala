@@ -19,7 +19,7 @@ import scala.collection.mutable.ArrayBuffer
   *
   *
   * Indicators for trend trading: moving averages, RSI, MACD
-  * Indicators for range trading: BBands, ADX, MACD. ADX identifies whether range bound, BBands identify range, MACD can signal reversal
+  * Indicators for range trading: BBands, MACD. BBands identify range, MACD can signal reversal
   *
   * General utility: average true range, indicates overall volatility. On-balance volume, indicates future trend breakout
   *
