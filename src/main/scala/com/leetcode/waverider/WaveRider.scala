@@ -69,6 +69,14 @@ object WaveRider {
           analyzedMarketDays.append(analyzedDay)
 
         })
+
+        market.close()
+
+        val writer = CSVWriter.open(new File("analysis.csv"))
+        writer.writeRow(analyzedMarketDays.head.toFeatureList)
+        analyzedMarketDays.foreach(day => writer.writeRow(day.toFeatureList))
+
+        writer.close()
       }
     } else {
       println("Supply single market .csv file, such as from Yahoo finance")
@@ -92,9 +100,11 @@ object WaveRider {
     mktDay
   }
 
-  def bollinger(): Option[BBand] = {
+  def bollinger(): BBand = {
     val TIME_PERIOD = 21
     val DISTANCE_DEVIATIONS = 2
+
+    val band = new BBand
 
     if (marketActivity.length >= TIME_PERIOD) {
 
@@ -110,21 +120,20 @@ object WaveRider {
       val retCode = core.bbands(0, prices.length - 1, prices, TIME_PERIOD, DISTANCE_DEVIATIONS, DISTANCE_DEVIATIONS, MAType.Sma, begin, nbElement, upperBand, avg, lowerBand)
 
       if (retCode == RetCode.Success) {
-        val band = new BBand
-        band.upperBand = upperBand.head
-        band.avg = avg.head
-        band.lowerBand = lowerBand.head
+        band.upperBand = Some(upperBand.head)
+        band.avg = Some(avg.head)
+        band.lowerBand = Some(lowerBand.head)
         band.bandDistance = DISTANCE_DEVIATIONS
-
-        return Some(band)
       }
     }
 
-    None
+    band
   }
 
-  def averageTrueRange(): Option[AvgTrueRange] = {
+  def averageTrueRange(): AvgTrueRange = {
     val TIME_PERIOD = 14
+
+    val atr = new AvgTrueRange
 
     //strictly greater than, as we need 15 points for a 14 day ATR: we need 1 point past the last, as TR requires it
     if (marketActivity.length > TIME_PERIOD) {
@@ -139,18 +148,16 @@ object WaveRider {
       val retCode = core.atr(0, days.length - 1, highs, lows, close, TIME_PERIOD, new MInteger, new MInteger, result)
 
       if (retCode == RetCode.Success) {
-        val atr = new AvgTrueRange
-
-        atr.value = result.head
-
-        return Some(atr)
+        atr.value = Some(result.head)
       }
     }
 
-    None
+    atr
   }
 
-  def movingAverage(timePeriod: Int, avgType: AvgType): Option[MovingAverage] = {
+  def movingAverage(timePeriod: Int, avgType: AvgType): MovingAverage = {
+
+    val ma = new MovingAverage
 
     if (marketActivity.length >= timePeriod) {
       val days = marketActivity.slice(marketActivity.length - timePeriod, marketActivity.length)
@@ -168,26 +175,25 @@ object WaveRider {
       }
 
       if (retCode == RetCode.Success) {
-        val ma = new MovingAverage
-
         ma.avgType = avgType
         ma.timePeriod = timePeriod
-        ma.value = avg.head
+        ma.value = Some(avg.head)
 
-        return Some(ma)
       }
     }
 
-    None
+    ma
   }
 
-  def macd(): Option[MACD] = {
+  def macd(): MACD = {
 
     val SLOW_TIME_PERIOD = 26
     val FAST_TIME_PERIOD = 12
     val SIGNAL_PERIOD = 9
 
     val TOTAL_PERIODS = SLOW_TIME_PERIOD + SIGNAL_PERIOD
+
+    val macdObj = new MACD
 
     if (marketActivity.length >= TOTAL_PERIODS) {
       val days = marketActivity.slice(marketActivity.length - TOTAL_PERIODS, marketActivity.length)
@@ -202,26 +208,26 @@ object WaveRider {
       val retCode = core.macd(0, close.length - 1, close, FAST_TIME_PERIOD, SLOW_TIME_PERIOD, SIGNAL_PERIOD, new MInteger, new MInteger, macd, macdSignal, macdHist)
 
       if (retCode == RetCode.Success) {
-        val macdObj = new MACD
 
         macdObj.fastPeriod = FAST_TIME_PERIOD
         macdObj.slowPeriod = SLOW_TIME_PERIOD
         macdObj.signalPeriod = SIGNAL_PERIOD
 
-        macdObj.macd = macd.head
-        macdObj.macdSignal = macdSignal.head
-        macdObj.macdHist = macdHist.head
+        macdObj.macd = Some(macd.head)
+        macdObj.macdSignal = Some(macdSignal.head)
+        macdObj.macdHist = Some(macdHist.head)
 
-        return Some(macdObj)
       }
     }
 
-    None
+    macdObj
   }
 
-  def RSI(): Option[RSI] = {
+  def RSI(): RSI = {
 
     val TIME_PERIOD = 14
+
+    val rsi = new RSI
 
     //must include 1 extra day, as first element in array needs a prior element
     if (marketActivity.length > TIME_PERIOD) {
@@ -234,19 +240,18 @@ object WaveRider {
       val retCode = core.rsi(0, closingPrices.length - 1, closingPrices, TIME_PERIOD, new MInteger, new MInteger, outRSI)
 
       if (retCode == RetCode.Success) {
-        val rsi = new RSI
 
         rsi.timePeriod = TIME_PERIOD
-        rsi.value = outRSI.head
-
-        return Some(rsi)
+        rsi.value = Some(outRSI.head)
       }
     }
 
-    None
+    rsi
   }
 
-  def OBV(): Option[OnBalanceVolume] = {
+  def OBV(): OnBalanceVolume = {
+
+    val todayOBV = new OnBalanceVolume
 
     if(marketActivity.length > 1 && analyzedMarketDays.nonEmpty) {
 
@@ -257,26 +262,22 @@ object WaveRider {
 
       val yesterdayOBV = analyzedMarketDays.last.onBalanceVolume
 
-      val todayOBV = new OnBalanceVolume
-
-      yesterdayOBV match {
+      yesterdayOBV.value match {
         case Some(obv) =>
           if(prices.head > prices.last) {
-            todayOBV.value = obv.value + volume.last
+            todayOBV.value = Some(obv + volume.last)
           } else if(prices.head < prices.last) {
-            todayOBV.value = obv.value - volume.last
+            todayOBV.value = Some(obv - volume.last)
           }
         case None =>
           if(prices.head > prices.last) {
-            todayOBV.value = volume.last
+            todayOBV.value = Some(volume.last)
           } else if(prices.head < prices.last) {
-            todayOBV.value = -volume.last
+            todayOBV.value = Some(-volume.last)
           }
       }
-
-      return Some(todayOBV)
     }
 
-    None
+    todayOBV
   }
 }
