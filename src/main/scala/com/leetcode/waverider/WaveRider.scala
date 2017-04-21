@@ -73,8 +73,12 @@ object WaveRider {
         market.close()
 
         val writer = CSVWriter.open(new File("analysis.csv"))
-        writer.writeRow(analyzedMarketDays.head.headers)
-        analyzedMarketDays.foreach(day => writer.writeRow(day.features))
+        writer.writeRow("index" :: analyzedMarketDays.head.headers)
+
+        analyzedMarketDays.indices.foreach(i => {
+          val day = analyzedMarketDays(i)
+          writer.writeRow(i.toString :: day.features)
+        })
 
         writer.close()
       }
@@ -178,7 +182,6 @@ object WaveRider {
 
       if (retCode == RetCode.Success) {
         ma.value = Some(avg.head)
-
       }
     }
 
