@@ -4,6 +4,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 
 import com.github.tototoshi.csv._
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay}
 import com.leetcode.waverider.indicators.momentum.RSI
 import com.leetcode.waverider.indicators.trend.MovingAverage.AvgType
 import com.leetcode.waverider.indicators.trend.MovingAverage.AvgType.AvgType
@@ -32,59 +33,118 @@ object WaveRider {
   val analyzedMarketDays = new ArrayBuffer[AnalyzedMarketDay]()
 
   def main(args: Array[String]): Unit = {
-    if (args.length == 1) {
+    if (args.length == 2) {
       val marketFile = new File(args(0))
 
-      if (marketFile.exists) {
-        val market = CSVReader.open(marketFile)
-
-        market.iterator.next()
-
-        market.iterator.foreach(day => {
-          val mktDay = initTypes(day)
-          marketActivity.append(mktDay)
-
-          println("Date: " + day.head)
-
-          val rsi = RSI()
-
-          val macd_result = macd()
-
-          val ema200 = movingAverage(200, AvgType.EMA)
-          val ema100 = movingAverage(100, AvgType.EMA)
-          val ema50 = movingAverage(50, AvgType.EMA)
-          val ema25 = movingAverage(25, AvgType.EMA)
-          val ema15 = movingAverage(15, AvgType.EMA)
-          val ema10 = movingAverage(10, AvgType.EMA)
-          val ema5 = movingAverage(5, AvgType.EMA)
-
-          val atr = averageTrueRange()
-
-          val band = bollinger()
-
-          val obv = OBV()
-
-          val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv)
-
-          analyzedMarketDays.append(analyzedDay)
-
-        })
-
-        market.close()
-
-        val writer = CSVWriter.open(new File("analysis.csv"))
-        writer.writeRow("index" :: analyzedMarketDays.head.headers)
-
-        analyzedMarketDays.indices.foreach(i => {
-          val day = analyzedMarketDays(i)
-          writer.writeRow(i.toString :: day.features)
-        })
-
-        writer.close()
+      if (!marketFile.exists) {
+        println("Invalid or empty file supplied, exiting")
+        return
       }
+
+      if(args(1).equals("analyze")) {
+        doAnalysis(marketFile)
+      } else if(args(1).equals("label")) {
+        doLabeling(marketFile)
+      }
+
     } else {
-      println("Supply single market .csv file, such as from Yahoo finance")
+      println("Supply single market .csv file, such as from Yahoo finance, and a mode: analyze or label")
     }
+  }
+
+  def doLabeling(marketFile: File): Unit = {
+    val market = CSVReader.open(marketFile)
+    market.iterator.next()
+
+    //series of rules we shall attempt to code up is find points where over the next x days the price rises x percent relative to the starting point
+    //while not going down more than 0.x percent from the starting point
+
+    val threshold = 5
+
+
+    market.iterator.foreach(day => {
+      val mktDay = initTypes(day)
+      marketActivity.append(mktDay)
+    })
+
+    marketActivity.indices.foreach(i => {
+      //if the next 5 days fall within the range of data we have
+      if(i+5 <= marketActivity.length - 1) {
+        val startingPoint = marketActivity(i).close
+
+        var lowestPct:Double = 0
+        var highestPct:Double = 0
+
+        for(j <- i+1 to i+threshold) {
+          val pctChange = (marketActivity(j).close - startingPoint) / startingPoint
+
+          if(pctChange > highestPct) {
+            highestPct = pctChange
+          }
+
+          if(pctChange < lowestPct) {
+            lowestPct = pctChange
+          }
+        }
+
+        if(highestPct >= threshold / 100.0 && lowestPct <= threshold / 1000.0) {
+          println(true)
+        } else {
+          println(false)
+        }
+      }
+    })
+
+  }
+
+
+
+  def doAnalysis(marketFile: File): Unit = {
+    val market = CSVReader.open(marketFile)
+
+    market.iterator.next()
+
+    market.iterator.foreach(day => {
+      val mktDay = initTypes(day)
+      marketActivity.append(mktDay)
+
+      println("Date: " + day.head)
+
+      val rsi = RSI()
+
+      val macd_result = macd()
+
+      val ema200 = movingAverage(200, AvgType.EMA)
+      val ema100 = movingAverage(100, AvgType.EMA)
+      val ema50 = movingAverage(50, AvgType.EMA)
+      val ema25 = movingAverage(25, AvgType.EMA)
+      val ema15 = movingAverage(15, AvgType.EMA)
+      val ema10 = movingAverage(10, AvgType.EMA)
+      val ema5 = movingAverage(5, AvgType.EMA)
+
+      val atr = averageTrueRange()
+
+      val band = bollinger()
+
+      val obv = OBV()
+
+      val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv)
+
+      analyzedMarketDays.append(analyzedDay)
+
+    })
+
+    market.close()
+
+    val writer = CSVWriter.open(new File("analysis.csv"))
+    writer.writeRow("index" :: analyzedMarketDays.head.headers)
+
+    analyzedMarketDays.indices.foreach(i => {
+      val day = analyzedMarketDays(i)
+      writer.writeRow(i.toString :: day.features)
+    })
+
+    writer.close()
   }
 
 

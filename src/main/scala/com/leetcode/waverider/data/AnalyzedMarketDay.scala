@@ -1,4 +1,4 @@
-package com.leetcode.waverider
+package com.leetcode.waverider.data
 
 import com.leetcode.waverider.indicators.Writable
 import com.leetcode.waverider.indicators.momentum.RSI

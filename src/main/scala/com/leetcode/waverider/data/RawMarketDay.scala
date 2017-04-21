@@ -1,4 +1,4 @@
-package com.leetcode.waverider
+package com.leetcode.waverider.data
 
 import java.util.Date
 
