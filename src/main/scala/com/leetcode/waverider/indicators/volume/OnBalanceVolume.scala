@@ -7,15 +7,15 @@ import com.leetcode.waverider.indicators.Writable
   */
 class OnBalanceVolume extends Writable {
 
-  var value:Option[Int] = _
+  var value:Option[Int] = None
 
   override def toString = s"OnBalanceVolume($value)"
 
-  override def getFeatureHeaderList: List[String] = {
+  override def headers: List[String] = {
     List("OBV")
   }
 
-  override def toFeatureList: List[String] = {
+  override def features: List[String] = {
     List(value.getOrElse("").toString)
   }
 }

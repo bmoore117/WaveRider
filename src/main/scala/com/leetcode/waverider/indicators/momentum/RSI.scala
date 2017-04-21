@@ -8,16 +8,16 @@ import com.leetcode.waverider.indicators.Writable
 class RSI extends Writable {
 
   var timePeriod:Int = _
-  var value:Option[Double] = _
+  var value:Option[Double] = None
 
 
   override def toString = s"RSI($timePeriod, $value)"
 
-  override def getFeatureHeaderList: List[String] = {
+  override def headers: List[String] = {
     List("RSI")
   }
 
-  override def toFeatureList: List[String] = {
+  override def features: List[String] = {
     List(value.getOrElse("").toString)
   }
 }

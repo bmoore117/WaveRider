@@ -10,18 +10,18 @@ class MACD extends Writable {
   var slowPeriod:Int = _
   var signalPeriod:Int = _
 
-  var macd:Option[Double] = _
-  var macdSignal:Option[Double] = _
-  var macdHist:Option[Double] = _
+  var macd:Option[Double] = None
+  var macdSignal:Option[Double] = None
+  var macdHist:Option[Double] = None
 
 
   override def toString = s"MACD($fastPeriod, $slowPeriod, $signalPeriod, $macd, $macdSignal, $macdHist)"
 
-  override def getFeatureHeaderList: List[String] = {
+  override def headers: List[String] = {
     List("MACD", "MACDSIGNAL")
   }
 
-  override def toFeatureList: List[String] = {
+  override def features: List[String] = {
     List(macd.getOrElse("").toString, macdSignal.getOrElse("").toString)
   }
 }

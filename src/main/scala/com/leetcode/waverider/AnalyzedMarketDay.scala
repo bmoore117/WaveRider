@@ -21,11 +21,11 @@ class AnalyzedMarketDay(val rsi: RSI, val MACD: MACD, val ma200: MovingAverage,
 
   override def toString = s"AnalyzedMarketDay($rsi, $MACD, $ma200, $ma100, $ma50, $ma25, $ma15, $ma10, $ma5, $avgTrueRange, $bBand, $onBalanceVolume)"
 
-  override def getFeatureHeaderList: List[String] = {
-    rsi.getFeatureHeaderList ++ MACD.getFeatureHeaderList ++ ma200.getFeatureHeaderList ++ ma100.getFeatureHeaderList ++ ma50.getFeatureHeaderList ++ ma25.getFeatureHeaderList ++ ma15.getFeatureHeaderList ++ ma10.getFeatureHeaderList ++ ma5.getFeatureHeaderList ++ avgTrueRange.getFeatureHeaderList ++ bBand.getFeatureHeaderList ++ onBalanceVolume.getFeatureHeaderList
+  override def headers: List[String] = {
+    rsi.headers ++ MACD.headers ++ ma200.headers ++ ma100.headers ++ ma50.headers ++ ma25.headers ++ ma15.headers ++ ma10.headers ++ ma5.headers ++ avgTrueRange.headers ++ bBand.headers ++ onBalanceVolume.headers
   }
 
-  override def toFeatureList: List[String] = {
-    rsi.toFeatureList ++ MACD.toFeatureList ++ ma200.toFeatureList ++ ma100.toFeatureList ++ ma50.toFeatureList ++ ma25.toFeatureList ++ ma15.toFeatureList ++ ma10.toFeatureList ++ ma5.toFeatureList ++ avgTrueRange.toFeatureList ++ bBand.toFeatureList ++ onBalanceVolume.toFeatureList
+  override def features: List[String] = {
+    rsi.features ++ MACD.features ++ ma200.features ++ ma100.features ++ ma50.features ++ ma25.features ++ ma15.features ++ ma10.features ++ ma5.features ++ avgTrueRange.features ++ bBand.features ++ onBalanceVolume.features
   }
 }

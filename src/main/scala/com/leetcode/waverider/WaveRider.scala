@@ -73,8 +73,8 @@ object WaveRider {
         market.close()
 
         val writer = CSVWriter.open(new File("analysis.csv"))
-        writer.writeRow(analyzedMarketDays.head.toFeatureList)
-        analyzedMarketDays.foreach(day => writer.writeRow(day.toFeatureList))
+        writer.writeRow(analyzedMarketDays.head.headers)
+        analyzedMarketDays.foreach(day => writer.writeRow(day.features))
 
         writer.close()
       }
@@ -158,6 +158,8 @@ object WaveRider {
   def movingAverage(timePeriod: Int, avgType: AvgType): MovingAverage = {
 
     val ma = new MovingAverage
+    ma.avgType = avgType
+    ma.timePeriod = timePeriod
 
     if (marketActivity.length >= timePeriod) {
       val days = marketActivity.slice(marketActivity.length - timePeriod, marketActivity.length)
@@ -175,8 +177,6 @@ object WaveRider {
       }
 
       if (retCode == RetCode.Success) {
-        ma.avgType = avgType
-        ma.timePeriod = timePeriod
         ma.value = Some(avg.head)
 
       }
@@ -191,7 +191,7 @@ object WaveRider {
     val FAST_TIME_PERIOD = 12
     val SIGNAL_PERIOD = 9
 
-    val TOTAL_PERIODS = SLOW_TIME_PERIOD + SIGNAL_PERIOD
+    val TOTAL_PERIODS = SLOW_TIME_PERIOD + SIGNAL_PERIOD - 1
 
     val macdObj = new MACD
 
@@ -204,7 +204,6 @@ object WaveRider {
       val macdSignal = new Array[Double](1)
       val macdHist = new Array[Double](1)
 
-      //TIME_PERIOD - 1 in lookback period, as array is indexed 0-13
       val retCode = core.macd(0, close.length - 1, close, FAST_TIME_PERIOD, SLOW_TIME_PERIOD, SIGNAL_PERIOD, new MInteger, new MInteger, macd, macdSignal, macdHist)
 
       if (retCode == RetCode.Success) {

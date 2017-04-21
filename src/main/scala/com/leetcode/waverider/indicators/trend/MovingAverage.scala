@@ -8,16 +8,16 @@ import com.leetcode.waverider.indicators.Writable
 class MovingAverage extends Writable {
 
   var timePeriod:Int = _
-  var value:Option[Double] = _
+  var value:Option[Double] = None
   var avgType:MovingAverage.AvgType.AvgType = _
 
   override def toString = s"MovingAverage($timePeriod, $value, $avgType)"
 
-  override def getFeatureHeaderList: List[String] = {
+  override def headers: List[String] = {
     List(avgType.toString + timePeriod.toString)
   }
 
-  override def toFeatureList: List[String] = {
+  override def features: List[String] = {
     List(value.getOrElse("").toString)
   }
 }
