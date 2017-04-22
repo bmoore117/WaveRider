@@ -2,6 +2,7 @@ package com.leetcode.waverider
 
 import java.io.File
 import java.text.SimpleDateFormat
+import java.util.Date
 
 import com.github.tototoshi.csv._
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay}
@@ -61,22 +62,26 @@ object WaveRider {
 
     val threshold = 5
 
-
     market.iterator.foreach(day => {
       val mktDay = initTypes(day)
       marketActivity.append(mktDay)
     })
+    market.close()
 
-    marketActivity.indices.foreach(i => {
+    val sorted = marketActivity.sortBy(_.date)
+
+    val writer = CSVWriter.open(new File("labeling.csv"))
+
+    sorted.indices.foreach(i => {
       //if the next 5 days fall within the range of data we have
-      if(i+5 <= marketActivity.length - 1) {
-        val startingPoint = marketActivity(i).close
+      if(i+5 <= sorted.length - 1) {
+        val startingPoint = sorted(i).close
 
         var lowestPct:Double = 0
         var highestPct:Double = 0
 
         for(j <- i+1 to i+threshold) {
-          val pctChange = (marketActivity(j).close - startingPoint) / startingPoint
+          val pctChange = (sorted(j).close - startingPoint) / startingPoint
 
           if(pctChange > highestPct) {
             highestPct = pctChange
@@ -88,16 +93,16 @@ object WaveRider {
         }
 
         if(highestPct >= threshold / 100.0 && lowestPct <= threshold / 1000.0) {
-          println(true)
+          writer.writeRow(List(i.toString, "1"))
         } else {
-          println(false)
+          writer.writeRow(List(i.toString, "0"))
         }
       }
     })
 
+    writer.close()
+
   }
-
-
 
   def doAnalysis(marketFile: File): Unit = {
     val market = CSVReader.open(marketFile)
@@ -131,10 +136,7 @@ object WaveRider {
       val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv)
 
       analyzedMarketDays.append(analyzedDay)
-
     })
-
-    market.close()
 
     val writer = CSVWriter.open(new File("analysis.csv"))
     writer.writeRow("index" :: analyzedMarketDays.head.headers)
@@ -143,7 +145,6 @@ object WaveRider {
       val day = analyzedMarketDays(i)
       writer.writeRow(i.toString :: day.features)
     })
-
     writer.close()
   }
 
