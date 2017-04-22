@@ -1,4 +1,4 @@
-package com.leetcode.waverider.indicators
+package com.leetcode.waverider.data.indicators
 
 /**
   * Created by Ben on 4/20/2017.

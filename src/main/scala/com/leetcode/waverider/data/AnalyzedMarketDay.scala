@@ -1,10 +1,10 @@
 package com.leetcode.waverider.data
 
-import com.leetcode.waverider.indicators.Writable
-import com.leetcode.waverider.indicators.momentum.RSI
-import com.leetcode.waverider.indicators.trend.{MACD, MovingAverage}
-import com.leetcode.waverider.indicators.volatility.{AvgTrueRange, BBand}
-import com.leetcode.waverider.indicators.volume.OnBalanceVolume
+import com.leetcode.waverider.data.indicators.Writable
+import com.leetcode.waverider.data.indicators.momentum.RSI
+import com.leetcode.waverider.data.indicators.trend.{MACD, MovingAverage}
+import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, BBand}
+import com.leetcode.waverider.data.indicators.volume.OnBalanceVolume
 
 /**
   * Created by Ben on 4/19/2017.

@@ -1,6 +1,6 @@
-package com.leetcode.waverider.indicators.momentum
+package com.leetcode.waverider.data.indicators.momentum
 
-import com.leetcode.waverider.indicators.Writable
+import com.leetcode.waverider.data.indicators.Writable
 
 /**
   * Created by Benjamin on 4/18/2017.

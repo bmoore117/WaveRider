@@ -1,17 +1,16 @@
-package com.leetcode.waverider
+package com.leetcode.waverider.engines
 
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
 
 import com.github.tototoshi.csv._
+import com.leetcode.waverider.adapters.Adapter
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay}
-import com.leetcode.waverider.indicators.momentum.RSI
-import com.leetcode.waverider.indicators.trend.MovingAverage.AvgType
-import com.leetcode.waverider.indicators.trend.MovingAverage.AvgType.AvgType
-import com.leetcode.waverider.indicators.trend.{MACD, MovingAverage}
-import com.leetcode.waverider.indicators.volatility.{AvgTrueRange, BBand}
-import com.leetcode.waverider.indicators.volume.OnBalanceVolume
+import com.leetcode.waverider.data.indicators.momentum.RSI
+import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType
+import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType.AvgType
+import com.leetcode.waverider.data.indicators.trend.{MACD, MovingAverage}
+import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, BBand}
+import com.leetcode.waverider.data.indicators.volume.OnBalanceVolume
 import com.tictactec.ta.lib.{Core, MAType, MInteger, RetCode}
 
 import scala.collection.mutable.ArrayBuffer
@@ -26,62 +25,30 @@ import scala.collection.mutable.ArrayBuffer
   * General utility: average true range, indicates overall volatility. On-balance volume, indicates future trend breakout
   *
   */
-object WaveRider {
-
-  val marketActivity = new ArrayBuffer[RawMarketDay]()
-  val core = new Core
-
+class Analyzer(val market: Adapter) {
+  
+  val rawDays = new ArrayBuffer[RawMarketDay]()
   val analyzedMarketDays = new ArrayBuffer[AnalyzedMarketDay]()
 
-  def main(args: Array[String]): Unit = {
-    if (args.length == 2) {
-      val marketFile = new File(args(0))
+  val core = new Core
 
-      if (!marketFile.exists) {
-        println("Invalid or empty file supplied, exiting")
-        return
-      }
-
-      if(args(1).equals("analyze")) {
-        doAnalysis(marketFile)
-      } else if(args(1).equals("label")) {
-        doLabeling(marketFile)
-      }
-
-    } else {
-      println("Supply single market .csv file, such as from Yahoo finance, and a mode: analyze or label")
-    }
-  }
-
-  def doLabeling(marketFile: File): Unit = {
-    val market = CSVReader.open(marketFile)
-    market.iterator.next()
-
-    //series of rules we shall attempt to code up is find points where over the next x days the price rises x percent relative to the starting point
-    //while not going down more than 0.x percent from the starting point
+  def writeLabeling(): Unit = {
 
     val threshold = 5
 
-    market.iterator.foreach(day => {
-      val mktDay = initTypes(day)
-      marketActivity.append(mktDay)
-    })
-    market.close()
+    val writer = CSVWriter.open(new File("trainLabels.csv"))
+    writer.writeRow(List("index", "tradeable"))
 
-    val sorted = marketActivity.sortBy(_.date)
-
-    val writer = CSVWriter.open(new File("labeling.csv"))
-
-    sorted.indices.foreach(i => {
+    rawDays.indices.foreach(i => {
       //if the next 5 days fall within the range of data we have
-      if(i+5 <= sorted.length - 1) {
-        val startingPoint = sorted(i).close
+      if(i+5 <= rawDays.length - 1) {
+        val startingPoint = rawDays(i).close
 
         var lowestPct:Double = 0
         var highestPct:Double = 0
 
         for(j <- i+1 to i+threshold) {
-          val pctChange = (sorted(j).close - startingPoint) / startingPoint
+          val pctChange = (rawDays(j).close - startingPoint) / startingPoint
 
           if(pctChange > highestPct) {
             highestPct = pctChange
@@ -93,77 +60,55 @@ object WaveRider {
         }
 
         if(highestPct >= threshold / 100.0 && lowestPct <= threshold / 1000.0) {
-          writer.writeRow(List(i.toString, "1"))
+          writer.writeRow(List((i+1).toString, "1"))
         } else {
-          writer.writeRow(List(i.toString, "0"))
+          writer.writeRow(List((i+1).toString, "0"))
         }
+      } else {
+        writer.writeRow(List((i+1).toString, "0"))
       }
     })
 
     writer.close()
-
   }
 
-  def doAnalysis(marketFile: File): Unit = {
-    val market = CSVReader.open(marketFile)
+  def analyzeNext(day: RawMarketDay): Unit = {
+    rawDays.append(day)
 
-    market.iterator.next()
+    val rsi = RSI()
 
-    market.iterator.foreach(day => {
-      val mktDay = initTypes(day)
-      marketActivity.append(mktDay)
+    val macd_result = macd()
 
-      println("Date: " + day.head)
+    val ema200 = movingAverage(200, AvgType.EMA)
+    val ema100 = movingAverage(100, AvgType.EMA)
+    val ema50 = movingAverage(50, AvgType.EMA)
+    val ema25 = movingAverage(25, AvgType.EMA)
+    val ema15 = movingAverage(15, AvgType.EMA)
+    val ema10 = movingAverage(10, AvgType.EMA)
+    val ema5 = movingAverage(5, AvgType.EMA)
 
-      val rsi = RSI()
+    val atr = averageTrueRange()
 
-      val macd_result = macd()
+    val band = bollinger()
 
-      val ema200 = movingAverage(200, AvgType.EMA)
-      val ema100 = movingAverage(100, AvgType.EMA)
-      val ema50 = movingAverage(50, AvgType.EMA)
-      val ema25 = movingAverage(25, AvgType.EMA)
-      val ema15 = movingAverage(15, AvgType.EMA)
-      val ema10 = movingAverage(10, AvgType.EMA)
-      val ema5 = movingAverage(5, AvgType.EMA)
+    val obv = OBV()
 
-      val atr = averageTrueRange()
+    val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv)
 
-      val band = bollinger()
+    analyzedMarketDays.append(analyzedDay)
+  }
 
-      val obv = OBV()
-
-      val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv)
-
-      analyzedMarketDays.append(analyzedDay)
-    })
-
-    val writer = CSVWriter.open(new File("analysis.csv"))
+  def writeAnalysis(): Unit = {
+    val writer = CSVWriter.open(new File("train.csv"))
     writer.writeRow("index" :: analyzedMarketDays.head.headers)
 
     analyzedMarketDays.indices.foreach(i => {
       val day = analyzedMarketDays(i)
-      writer.writeRow(i.toString :: day.features)
+      writer.writeRow((i+1).toString :: day.features)
     })
     writer.close()
   }
 
-
-  def initTypes(day: Seq[String]): RawMarketDay = {
-
-    val format = new SimpleDateFormat("yyyy-MM-DD")
-    val mktDay = new RawMarketDay
-
-    mktDay.date = format.parse(day.head)
-    mktDay.open = day(1).toDouble
-    mktDay.high = day(2).toDouble
-    mktDay.low = day(3).toDouble
-    mktDay.close = day(4).toDouble
-    mktDay.volume = day(5).toInt
-    mktDay.adjustedClose = day(6).toDouble
-
-    mktDay
-  }
 
   def bollinger(): BBand = {
     val TIME_PERIOD = 21
@@ -171,9 +116,9 @@ object WaveRider {
 
     val band = new BBand
 
-    if (marketActivity.length >= TIME_PERIOD) {
+    if (rawDays.length >= TIME_PERIOD) {
 
-      val prices = marketActivity.slice(marketActivity.length - TIME_PERIOD, marketActivity.length).map(day => day.close).toArray
+      val prices = rawDays.slice(rawDays.length - TIME_PERIOD, rawDays.length).map(day => day.close).toArray
 
       val upperBand: Array[Double] = new Array[Double](1)
       val avg: Array[Double] = new Array[Double](1)
@@ -201,8 +146,8 @@ object WaveRider {
     val atr = new AvgTrueRange
 
     //strictly greater than, as we need 15 points for a 14 day ATR: we need 1 point past the last, as TR requires it
-    if (marketActivity.length > TIME_PERIOD) {
-      val days = marketActivity.slice(marketActivity.length - TIME_PERIOD - 1, marketActivity.length)
+    if (rawDays.length > TIME_PERIOD) {
+      val days = rawDays.slice(rawDays.length - TIME_PERIOD - 1, rawDays.length)
 
       val highs = days.map(day => day.high).toArray
       val lows = days.map(day => day.low).toArray
@@ -226,8 +171,8 @@ object WaveRider {
     ma.avgType = avgType
     ma.timePeriod = timePeriod
 
-    if (marketActivity.length >= timePeriod) {
-      val days = marketActivity.slice(marketActivity.length - timePeriod, marketActivity.length)
+    if (rawDays.length >= timePeriod) {
+      val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
 
       val closingPrices = days.map(day => day.close).toArray
 
@@ -259,8 +204,8 @@ object WaveRider {
 
     val macdObj = new MACD
 
-    if (marketActivity.length >= TOTAL_PERIODS) {
-      val days = marketActivity.slice(marketActivity.length - TOTAL_PERIODS, marketActivity.length)
+    if (rawDays.length >= TOTAL_PERIODS) {
+      val days = rawDays.slice(rawDays.length - TOTAL_PERIODS, rawDays.length)
 
       val close = days.map(day => day.close).toArray
 
@@ -293,8 +238,8 @@ object WaveRider {
     val rsi = new RSI
 
     //must include 1 extra day, as first element in array needs a prior element
-    if (marketActivity.length > TIME_PERIOD) {
-      val days = marketActivity.slice(marketActivity.length - TIME_PERIOD - 1, marketActivity.length)
+    if (rawDays.length > TIME_PERIOD) {
+      val days = rawDays.slice(rawDays.length - TIME_PERIOD - 1, rawDays.length)
 
       val closingPrices = days.map(day => day.close).toArray
 
@@ -316,9 +261,9 @@ object WaveRider {
 
     val todayOBV = new OnBalanceVolume
 
-    if(marketActivity.length > 1 && analyzedMarketDays.nonEmpty) {
+    if(rawDays.length > 1 && analyzedMarketDays.nonEmpty) {
 
-      val days = marketActivity.slice(marketActivity.length - 2, marketActivity.length)
+      val days = rawDays.slice(rawDays.length - 2, rawDays.length)
 
       val prices = days.map(day => day.close)
       val volume = days.map(day => day.volume)

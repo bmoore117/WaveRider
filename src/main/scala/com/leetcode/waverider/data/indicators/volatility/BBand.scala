@@ -1,6 +1,6 @@
-package com.leetcode.waverider.indicators.volatility
+package com.leetcode.waverider.data.indicators.volatility
 
-import com.leetcode.waverider.indicators.Writable
+import com.leetcode.waverider.data.indicators.Writable
 
 /**
   * Created by Benjamin on 4/15/2017.
