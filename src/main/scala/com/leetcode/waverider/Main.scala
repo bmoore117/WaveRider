@@ -1,7 +1,7 @@
 package com.leetcode.waverider
 
 import com.leetcode.waverider.adapters.impl.YahooFileAdapter
-import com.leetcode.waverider.engines.Analyzer
+import com.leetcode.waverider.engines.IndicatorEngine
 
 /**
   * Created by Ben on 4/22/2017.
@@ -14,7 +14,7 @@ object Main {
       val adapter = new YahooFileAdapter()
       adapter.init(args)
 
-      val engine = new Analyzer(adapter)
+      val engine = new IndicatorEngine(adapter)
 
       var day = adapter.next()
 

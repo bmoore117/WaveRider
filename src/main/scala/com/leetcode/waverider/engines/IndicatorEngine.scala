@@ -25,7 +25,7 @@ import scala.collection.mutable.ArrayBuffer
   * General utility: average true range, indicates overall volatility. On-balance volume, indicates future trend breakout
   *
   */
-class Analyzer(val market: Adapter) {
+class IndicatorEngine(val market: Adapter) {
   
   val rawDays = new ArrayBuffer[RawMarketDay]()
   val analyzedMarketDays = new ArrayBuffer[AnalyzedMarketDay]()
