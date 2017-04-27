@@ -108,11 +108,13 @@ class IndicatorEngine(val market: Adapter) {
     val pointWiseTrendChanges = TrendUtils.findEndOfTrendChanges(prices, trends)
 
     val writer = CSVWriter.open(new File("train.csv"))
-    writer.writeRow(analyzedMarketDays.head.headers :: pointWiseTrendChanges.head.headers)
+    writer.writeRow(analyzedMarketDays.head.headers ++ pointWiseTrendChanges.head.headers)
 
     analyzedMarketDays.indices.foreach(i => {
       val day = analyzedMarketDays(i)
-      writer.writeRow(day.features :: pointWiseTrendChanges(i).features)
+      if(i < analyzedMarketDays.length - 1) {
+        writer.writeRow(day.features ++ pointWiseTrendChanges(i).features)
+      }
     })
     writer.close()
   }

@@ -86,7 +86,7 @@ object TrendUtils {
     val max = findLocalMaxima(prices)
     val min = findLocalMinima(prices)
 
-    val inflectionPts = (max ++ min).sortBy(i => i)
+    val inflectionPts = (List(0) ++ max ++ min ++ List(prices.length - 1)).sortBy(i => i)
 
     val trends = new mutable.ArrayBuffer[Trend]()
 
@@ -114,10 +114,10 @@ object TrendUtils {
 
     val results = new mutable.ArrayBuffer[ChangeMarker]()
 
-    var j = 1
+    var j = 0
     prices.indices.foreach(i => {
 
-      val trend = trends(i)
+      val trend = trends(j)
 
       var trendStart = trend.startIdx
       var trendEnd = trend.endIdx

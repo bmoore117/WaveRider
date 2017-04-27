@@ -24,7 +24,7 @@ object Main {
       }
 
       engine.writeAnalysis()
-      engine.writeLabeling()
+      //engine.writeLabeling()
 
     } else {
       println("Supply single market .csv file, such as from Yahoo finance, and a mode: analyze or label")
