@@ -1,6 +1,6 @@
 package com.leetcode.waverider.data.indicators.volume
 
-import com.leetcode.waverider.data.indicators.Writable
+import com.leetcode.waverider.data.Writable
 
 /**
   * Created by Benjamin on 4/18/2017.

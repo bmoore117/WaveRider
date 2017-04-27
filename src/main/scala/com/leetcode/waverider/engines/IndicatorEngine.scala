@@ -11,6 +11,7 @@ import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType.AvgTyp
 import com.leetcode.waverider.data.indicators.trend.{MACD, MovingAverage}
 import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, BBand}
 import com.leetcode.waverider.data.indicators.volume.OnBalanceVolume
+import com.leetcode.waverider.utils.TrendUtils
 import com.tictactec.ta.lib.{Core, MAType, MInteger, RetCode}
 
 import scala.collection.mutable.ArrayBuffer
@@ -99,12 +100,19 @@ class IndicatorEngine(val market: Adapter) {
   }
 
   def writeAnalysis(): Unit = {
+
+    val prices = rawDays.map(day => day.close).toList
+
+    val trends = TrendUtils.buildTrendData(prices)
+
+    val pointWiseTrendChanges = TrendUtils.findEndOfTrendChanges(prices, trends)
+
     val writer = CSVWriter.open(new File("train.csv"))
-    writer.writeRow("index" :: analyzedMarketDays.head.headers)
+    writer.writeRow(analyzedMarketDays.head.headers :: pointWiseTrendChanges.head.headers)
 
     analyzedMarketDays.indices.foreach(i => {
       val day = analyzedMarketDays(i)
-      writer.writeRow((i+1).toString :: day.features)
+      writer.writeRow(day.features :: pointWiseTrendChanges(i).features)
     })
     writer.close()
   }

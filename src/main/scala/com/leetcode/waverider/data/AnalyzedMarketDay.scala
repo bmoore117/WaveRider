@@ -1,6 +1,5 @@
 package com.leetcode.waverider.data
 
-import com.leetcode.waverider.data.indicators.Writable
 import com.leetcode.waverider.data.indicators.momentum.RSI
 import com.leetcode.waverider.data.indicators.trend.{MACD, MovingAverage}
 import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, BBand}

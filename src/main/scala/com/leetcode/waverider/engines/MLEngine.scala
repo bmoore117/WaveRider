@@ -20,19 +20,8 @@ class MLEngine(val trainPath:String) {
 
     val recordReader = new CSVRecordReader(1, ",")
     recordReader.initialize(new FileSplit(new File(trainPath)))
-    //reader,label index,number of possible labels
-    val iterator = new RecordReaderDataSetIterator(recordReader, 100, 0, 1257, true)
-
-
-
-  }
-
-
-  def getDatasetIterator(): DataSetIterator = {
-
+    val iterator = new RecordReaderDataSetIterator(recordReader, 100, 15, 16, true) //15, 15 is idx where labels begin & end
 
 
   }
-
-
 }

@@ -1,6 +1,6 @@
 package com.leetcode.waverider.data.indicators.trend
 
-import com.leetcode.waverider.data.indicators.Writable
+import com.leetcode.waverider.data.Writable
 
 /**
   * Created by Ben on 4/18/2017.
