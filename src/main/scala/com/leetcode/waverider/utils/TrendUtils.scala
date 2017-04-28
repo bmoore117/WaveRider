@@ -133,7 +133,7 @@ object TrendUtils {
 
         val changeMarker = new ChangeMarker
 
-        changeMarker.valueChangeFromHere = (prices(trends(j).endIdx) - price) / prices(trends(j).endIdx)
+        changeMarker.valueChangeFromHere = (prices(trends(j).endIdx) - price) / price
         changeMarker.trendDurationFromHere = trendEnd - i
 
         results.append(changeMarker)
