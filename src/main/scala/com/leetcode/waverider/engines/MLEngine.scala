@@ -66,7 +66,7 @@ class MLEngine(val trainPath:String, val testPath:String) {
 
     val results = network.output(testIterator)
 
-    for(i <- 0 until results.size(0) - 1) {
+    for(i <- 0 until results.rows() - 1) {
       println("valueChg: " + results.getRow(i).getColumn(0))
       println("trendLength: " + results.getRow(i).getColumn(1))
     }
