@@ -1,7 +1,7 @@
 package com.leetcode.waverider
 
 import com.leetcode.waverider.adapters.impl.YahooFileAdapter
-import com.leetcode.waverider.engines.IndicatorEngine
+import com.leetcode.waverider.engines.{IndicatorEngine, MLEngine}
 
 /**
   * Created by Ben on 4/22/2017.
@@ -24,9 +24,14 @@ object Main {
       }
 
       engine.writeAnalysis()
-      //engine.writeLabeling()
 
-    } else {
+    } else if (args.length == 2) {
+      val engine = new MLEngine(args.head, args.last)
+
+      engine.train()
+    }
+
+    else {
       println("Supply single market .csv file, such as from Yahoo finance, and a mode: analyze or label")
     }
   }
