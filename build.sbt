@@ -12,3 +12,5 @@ libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.4"
 libraryDependencies += "org.deeplearning4j" % "deeplearning4j-core" % "0.8.0"
 libraryDependencies += "org.nd4j" % "nd4j-native-platform" % "0.8.0"
 libraryDependencies += "org.datavec" % "datavec-api" % "0.8.0"
+
+libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.25"
