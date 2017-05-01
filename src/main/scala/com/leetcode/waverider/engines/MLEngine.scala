@@ -2,12 +2,8 @@ package com.leetcode.waverider.engines
 
 import java.io.File
 
-import com.leetcode.waverider.data.AnalyzedMarketDay
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader
 import org.datavec.api.split.FileSplit
-import org.datavec.api.transform.TransformProcess
-import org.datavec.api.transform.schema.Schema
-import org.datavec.api.transform.transform.normalize.Normalize
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.layers.{DenseLayer, OutputLayer}
@@ -16,7 +12,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.nn.weights.WeightInit
 import org.nd4j.linalg.activations.Activation
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
-import org.nd4j.linalg.dataset.api.preprocessor.{DataNormalization, NormalizerStandardize}
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize
 import org.nd4j.linalg.lossfunctions.LossFunctions
 
 /**
@@ -28,9 +24,7 @@ class MLEngine(val trainPath:String, val testPath:String) {
   val seed = 12345
   val iterations = 10
   val nEpochs = 200
-  val nSamples = 1000
-  val batchSize = 100
-  val learningRate = 0.01
+  val learningRate = 0.02
 
   var network:MultiLayerNetwork = _
 
@@ -49,7 +43,7 @@ class MLEngine(val trainPath:String, val testPath:String) {
       .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
       .learningRate(learningRate)
       .weightInit(WeightInit.XAVIER)
-      .updater(Updater.NESTEROVS).momentum(0.9)
+      .updater(Updater.RMSPROP)
       .list()
       .layer(0, new DenseLayer.Builder().nIn(numInput).nOut(nHidden)
         .activation(Activation.TANH)
@@ -68,12 +62,13 @@ class MLEngine(val trainPath:String, val testPath:String) {
       network.fit(trainIterator)
     }
 
-    val results = network.output(testIterator)
+    val results = network.evaluateRegression(testIterator)
 
-    for(i <- 0 until results.rows() - 1) {
-      println("valueChg: " + results.getRow(i).getColumn(0))
-      println("trendLength: " + results.getRow(i).getColumn(1))
-    }
+    println("Value r2: " + results.correlationR2(0))
+    println("Duration r2: " + results.correlationR2(1))
+
+    println("Value RMSE: " + results.rootMeanSquaredError(0))
+    println("Duration RMSE: " + results.rootMeanSquaredError(0))
 
   }
 
