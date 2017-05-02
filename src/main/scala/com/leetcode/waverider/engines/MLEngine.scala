@@ -64,12 +64,22 @@ class MLEngine(val trainPath:String, val testPath:String) {
 
     val results = network.evaluateRegression(testIterator)
 
-    println("Value r2: " + results.correlationR2(0))
-    println("Duration r2: " + results.correlationR2(1))
+    println("Test set price r2: " + results.correlationR2(0))
+    println("Test set duration r2: " + results.correlationR2(1))
 
-    println("Value RMSE: " + results.rootMeanSquaredError(0))
-    println("Duration RMSE: " + results.rootMeanSquaredError(0))
+    println("Test set value RMSE: " + results.rootMeanSquaredError(0))
+    println("Test set duration RMSE: " + results.rootMeanSquaredError(0))
 
+
+    println("")
+    trainIterator.reset()
+    val trainResults = network.evaluateRegression(trainIterator)
+
+    println("Train set price r2: " + trainResults.correlationR2(0))
+    println("Train set duration r2: " + trainResults.correlationR2(1))
+
+    println("Train set value RMSE: " + trainResults.rootMeanSquaredError(0))
+    println("Train set duration RMSE: " + trainResults.rootMeanSquaredError(0))
   }
 
   def getTrainingSet(): DataSetIterator = {
