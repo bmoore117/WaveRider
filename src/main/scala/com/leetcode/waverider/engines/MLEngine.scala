@@ -67,8 +67,8 @@ class MLEngine(val trainPath:String, val testPath:String) {
     println("Test set price r2: " + results.correlationR2(0))
     println("Test set duration r2: " + results.correlationR2(1))
 
-    println("Test set value RMSE: " + results.rootMeanSquaredError(0))
-    println("Test set duration RMSE: " + results.rootMeanSquaredError(0))
+    println("Test set price RMSE: " + results.rootMeanSquaredError(0))
+    println("Test set duration RMSE: " + results.rootMeanSquaredError(1))
 
 
     println("")
@@ -78,8 +78,8 @@ class MLEngine(val trainPath:String, val testPath:String) {
     println("Train set price r2: " + trainResults.correlationR2(0))
     println("Train set duration r2: " + trainResults.correlationR2(1))
 
-    println("Train set value RMSE: " + trainResults.rootMeanSquaredError(0))
-    println("Train set duration RMSE: " + trainResults.rootMeanSquaredError(0))
+    println("Train set price RMSE: " + trainResults.rootMeanSquaredError(0))
+    println("Train set duration RMSE: " + trainResults.rootMeanSquaredError(1))
   }
 
   def getTrainingSet(): DataSetIterator = {
