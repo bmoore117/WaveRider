@@ -4,7 +4,8 @@ import java.io.File
 
 import com.github.tototoshi.csv._
 import com.leetcode.waverider.adapters.Adapter
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay}
+import com.leetcode.waverider.data.indicators.historical.HistoricalTrend
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, FutureTrend}
 import com.leetcode.waverider.data.indicators.momentum.RSI
 import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType
 import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType.AvgType
@@ -32,6 +33,10 @@ class IndicatorEngine(val market: Adapter) {
   val analyzedMarketDays = new ArrayBuffer[AnalyzedMarketDay]()
 
   val core = new Core
+
+  var lastInflectionIdx:Int = 0
+  var isTrendUp:Boolean = false
+  var yesterday:RawMarketDay = _
 
   def writeLabeling(): Unit = {
 
@@ -93,6 +98,8 @@ class IndicatorEngine(val market: Adapter) {
     val band = bollinger()
 
     val obv = OBV()
+
+
 
     val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv)
 
@@ -297,5 +304,30 @@ class IndicatorEngine(val market: Adapter) {
     }
 
     todayOBV
+  }
+
+  def trend(today: RawMarketDay): HistoricalTrend = {
+    if(lastInflectionIdx == 0) {
+      yesterday = today
+      new HistoricalTrend(None, None)
+    } else {
+
+      val valueChg = rawDays(lastInflectionIdx).close - rawDays(rawDays.length - 1).close / rawDays(lastInflectionIdx).close
+      val duration = (rawDays.length - 1) - lastInflectionIdx
+
+      if(isTrendUp) {
+        if(today.close < yesterday.close) {
+          lastInflectionIdx = rawDays.length - 1
+          isTrendUp = false
+        }
+      } else if(!isTrendUp) {
+        if(today.close > yesterday.close) {
+          lastInflectionIdx = rawDays.length - 1
+          isTrendUp = true
+        }
+      }
+
+      new HistoricalTrend(Some(valueChg), Some(duration))
+    }
   }
 }

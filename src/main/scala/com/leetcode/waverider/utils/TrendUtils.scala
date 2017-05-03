@@ -1,6 +1,6 @@
 package com.leetcode.waverider.utils
 
-import com.leetcode.waverider.data.{ChangeMarker, Trend}
+import com.leetcode.waverider.data.{ChangeMarker, FutureTrend}
 
 import scala.collection.mutable
 
@@ -81,14 +81,14 @@ object TrendUtils {
     results.toList
   }
 
-  def buildTrendData(prices:List[Double]):List[Trend] = {
+  def buildTrendData(prices:List[Double]):List[FutureTrend] = {
 
     val max = findLocalMaxima(prices)
     val min = findLocalMinima(prices)
 
     val inflectionPts = (List(0) ++ max ++ min ++ List(prices.length - 1)).sortBy(i => i)
 
-    val trends = new mutable.ArrayBuffer[Trend]()
+    val trends = new mutable.ArrayBuffer[FutureTrend]()
 
     var prevPoint = -1
 
@@ -102,7 +102,7 @@ object TrendUtils {
         val pctDelta = delta/prevPrice
         val trendDuration = point - prevPoint
 
-        trends.append(new Trend(prevPoint, point, pctDelta, trendDuration))
+        trends.append(new FutureTrend(prevPoint, point, pctDelta, trendDuration))
       }
       prevPoint = point
     }
@@ -110,7 +110,7 @@ object TrendUtils {
     trends.toList
   }
 
-  def findEndOfTrendChanges(prices:List[Double], trends:List[Trend]):List[ChangeMarker] = {
+  def findEndOfTrendChanges(prices:List[Double], trends:List[FutureTrend]):List[ChangeMarker] = {
 
     val results = new mutable.ArrayBuffer[ChangeMarker]()
 
