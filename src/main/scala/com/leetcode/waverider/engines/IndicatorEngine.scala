@@ -5,7 +5,7 @@ import java.io.File
 import com.github.tototoshi.csv._
 import com.leetcode.waverider.adapters.Adapter
 import com.leetcode.waverider.data.indicators.historical.HistoricalTrend
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, FutureTrend}
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend}
 import com.leetcode.waverider.data.indicators.momentum.RSI
 import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType
 import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType.AvgType
@@ -306,10 +306,10 @@ class IndicatorEngine(val market: Adapter) {
     todayOBV
   }
 
-  def trend(today: RawMarketDay): HistoricalTrend = {
+  def trend(today: RawMarketDay): Trend = {
     if(lastInflectionIdx == 0) {
       yesterday = today
-      new HistoricalTrend(None, None)
+      new Trend(None, None, None, None)
     } else {
 
       val valueChg = rawDays(lastInflectionIdx).close - rawDays(rawDays.length - 1).close / rawDays(lastInflectionIdx).close
@@ -327,7 +327,7 @@ class IndicatorEngine(val market: Adapter) {
         }
       }
 
-      new HistoricalTrend(Some(valueChg), Some(duration))
+      new Trend(None, None, Some(valueChg), Some(duration))
     }
   }
 }

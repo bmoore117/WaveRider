@@ -1,6 +1,5 @@
 package com.leetcode.waverider.data
 
-import com.leetcode.waverider.data.indicators.historical.HistoricalTrend
 import com.leetcode.waverider.data.indicators.momentum.RSI
 import com.leetcode.waverider.data.indicators.trend.{MACD, MovingAverage}
 import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, BBand}
@@ -14,7 +13,7 @@ class AnalyzedMarketDay(val rsi: RSI, val MACD: MACD, val ma200: MovingAverage,
                         val ma25: MovingAverage, val ma15: MovingAverage,
                         val ma10: MovingAverage, val ma5: MovingAverage,
                         val avgTrueRange: AvgTrueRange, val bBand: BBand,
-                        val onBalanceVolume: OnBalanceVolume, trend:HistoricalTrend) extends Writable {
+                        val onBalanceVolume: OnBalanceVolume, trend:Trend) extends Writable {
 
 
 
