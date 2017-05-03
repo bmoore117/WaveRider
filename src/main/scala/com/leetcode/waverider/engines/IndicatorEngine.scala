@@ -4,14 +4,13 @@ import java.io.File
 
 import com.github.tototoshi.csv._
 import com.leetcode.waverider.adapters.Adapter
-import com.leetcode.waverider.data.indicators.historical.HistoricalTrend
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend}
 import com.leetcode.waverider.data.indicators.momentum.RSI
 import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType
 import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType.AvgType
 import com.leetcode.waverider.data.indicators.trend.{MACD, MovingAverage}
 import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, BBand}
 import com.leetcode.waverider.data.indicators.volume.OnBalanceVolume
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend}
 import com.leetcode.waverider.utils.TrendUtils
 import com.tictactec.ta.lib.{Core, MAType, MInteger, RetCode}
 
@@ -36,7 +35,6 @@ class IndicatorEngine(val market: Adapter) {
 
   var lastInflectionIdx:Int = 0
   var isTrendUp:Boolean = false
-  var yesterday:RawMarketDay = _
 
   def writeLabeling(): Unit = {
 
@@ -308,20 +306,19 @@ class IndicatorEngine(val market: Adapter) {
 
   def trend(today: RawMarketDay): Trend = {
     if(lastInflectionIdx == 0) {
-      yesterday = today
       new Trend(None, None, None, None)
     } else {
 
-      val valueChg = rawDays(lastInflectionIdx).close - rawDays(rawDays.length - 1).close / rawDays(lastInflectionIdx).close
+      val valueChg = rawDays(lastInflectionIdx).close - rawDays.last.close / rawDays(lastInflectionIdx).close
       val duration = (rawDays.length - 1) - lastInflectionIdx
 
       if(isTrendUp) {
-        if(today.close < yesterday.close) {
+        if(rawDays.last.close < rawDays(rawDays.length - 2).close) {
           lastInflectionIdx = rawDays.length - 1
           isTrendUp = false
         }
       } else if(!isTrendUp) {
-        if(today.close > yesterday.close) {
+        if(rawDays.last.close > rawDays(rawDays.length - 2).close) {
           lastInflectionIdx = rawDays.length - 1
           isTrendUp = true
         }

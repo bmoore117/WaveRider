@@ -131,7 +131,9 @@ object TrendUtils {
       if(j < trends.length - 1) {
         val price = prices(i)
 
-        val changeMarker = new Trend(None, None, Some((prices(trends(j).endIdx) - price) / price), Some(trendEnd - i))
+        val change = (prices(trends(j).endIdx) - price) / price
+
+        val changeMarker = new Trend(None, None, Some(change), Some(trendEnd - i))
 
         results.append(changeMarker)
       }
