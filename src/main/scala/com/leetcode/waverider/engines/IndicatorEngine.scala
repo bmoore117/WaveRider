@@ -99,9 +99,9 @@ class IndicatorEngine(val market: Adapter) {
 
     val obv = OBV()
 
+    val historicalTrend = trend(day)
 
-
-    val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv)
+    val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv, historicalTrend)
 
     analyzedMarketDays.append(analyzedDay)
   }

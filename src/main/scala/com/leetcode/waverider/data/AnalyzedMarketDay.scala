@@ -1,5 +1,6 @@
 package com.leetcode.waverider.data
 
+import com.leetcode.waverider.data.indicators.historical.HistoricalTrend
 import com.leetcode.waverider.data.indicators.momentum.RSI
 import com.leetcode.waverider.data.indicators.trend.{MACD, MovingAverage}
 import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, BBand}
@@ -13,7 +14,7 @@ class AnalyzedMarketDay(val rsi: RSI, val MACD: MACD, val ma200: MovingAverage,
                         val ma25: MovingAverage, val ma15: MovingAverage,
                         val ma10: MovingAverage, val ma5: MovingAverage,
                         val avgTrueRange: AvgTrueRange, val bBand: BBand,
-                        val onBalanceVolume: OnBalanceVolume) extends Writable {
+                        val onBalanceVolume: OnBalanceVolume, trend:HistoricalTrend) extends Writable {
 
 
 
@@ -21,10 +22,10 @@ class AnalyzedMarketDay(val rsi: RSI, val MACD: MACD, val ma200: MovingAverage,
   override def toString = s"AnalyzedMarketDay($rsi, $MACD, $ma200, $ma100, $ma50, $ma25, $ma15, $ma10, $ma5, $avgTrueRange, $bBand, $onBalanceVolume)"
 
   override def headers: List[String] = {
-    rsi.headers ++ MACD.headers ++ ma200.headers ++ ma100.headers ++ ma50.headers ++ ma25.headers ++ ma15.headers ++ ma10.headers ++ ma5.headers ++ avgTrueRange.headers ++ bBand.headers ++ onBalanceVolume.headers
+    rsi.headers ++ MACD.headers ++ ma200.headers ++ ma100.headers ++ ma50.headers ++ ma25.headers ++ ma15.headers ++ ma10.headers ++ ma5.headers ++ avgTrueRange.headers ++ bBand.headers ++ onBalanceVolume.headers ++ trend.headers
   }
 
   override def features: List[String] = {
-    rsi.features ++ MACD.features ++ ma200.features ++ ma100.features ++ ma50.features ++ ma25.features ++ ma15.features ++ ma10.features ++ ma5.features ++ avgTrueRange.features ++ bBand.features ++ onBalanceVolume.features
+    rsi.features ++ MACD.features ++ ma200.features ++ ma100.features ++ ma50.features ++ ma25.features ++ ma15.features ++ ma10.features ++ ma5.features ++ avgTrueRange.features ++ bBand.features ++ onBalanceVolume.features ++ trend.features
   }
 }
