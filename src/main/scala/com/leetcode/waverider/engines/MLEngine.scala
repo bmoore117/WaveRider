@@ -2,6 +2,7 @@ package com.leetcode.waverider.engines
 
 import java.io.File
 
+import com.leetcode.waverider.data.AnalyzedMarketDay
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader
 import org.datavec.api.split.FileSplit
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator
@@ -33,7 +34,6 @@ class MLEngine(val trainPath:String, val testPath:String) {
     val trainIterator = getTrainingSet()
     val testIterator = getTestSet()
 
-    val numInput = 15
     val numOutputs = 2
     val nHidden = 15
 
@@ -45,15 +45,15 @@ class MLEngine(val trainPath:String, val testPath:String) {
       .weightInit(WeightInit.XAVIER)
       .updater(Updater.RMSPROP)
       .list()
-      .layer(0, new DenseLayer.Builder().nIn(numInput).nOut(nHidden)
+      .layer(0, new DenseLayer.Builder().nIn(AnalyzedMarketDay.numberOfFeatures).nOut(AnalyzedMarketDay.numberOfFeatures)
         .activation(Activation.TANH)
         .build())
-      .layer(1, new DenseLayer.Builder().nIn(numInput).nOut(10)
+      .layer(1, new DenseLayer.Builder().nIn(AnalyzedMarketDay.numberOfFeatures).nOut(12)
         .activation(Activation.TANH)
         .build())
       .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
         .activation(Activation.IDENTITY)
-        .nIn(10).nOut(numOutputs).build())
+        .nIn(12).nOut(numOutputs).build())
       .pretrain(false).backprop(true).build()
     )
 
@@ -85,7 +85,7 @@ class MLEngine(val trainPath:String, val testPath:String) {
   def getTrainingSet(): DataSetIterator = {
     val trainReader = new CSVRecordReader(1, ",")
     trainReader.initialize(new FileSplit(new File(trainPath)))
-    val trainIterator = new RecordReaderDataSetIterator(trainReader, 100, 15, 16, true) //15, 16 is idx where labels begin & end
+    val trainIterator = new RecordReaderDataSetIterator(trainReader, 100, AnalyzedMarketDay.numberOfFeatures, AnalyzedMarketDay.numberOfFeatures + 1, true) //15, 16 is idx where labels begin & end
 
     val trainNormalizer = new NormalizerStandardize()
     trainNormalizer.fit(trainIterator)
@@ -99,7 +99,7 @@ class MLEngine(val trainPath:String, val testPath:String) {
   def getTestSet(): DataSetIterator = {
     val testReader = new CSVRecordReader(1, ",")
     testReader.initialize(new FileSplit(new File(testPath)))
-    val testIterator = new RecordReaderDataSetIterator(testReader, 100, 15, 16, true) //15, 16 is idx where labels begin & end
+    val testIterator = new RecordReaderDataSetIterator(testReader, 100, AnalyzedMarketDay.numberOfFeatures, AnalyzedMarketDay.numberOfFeatures + 1, true) //15, 16 is idx where labels begin & end
 
     val testNormalizer = new NormalizerStandardize()
     testNormalizer.fit(testIterator)

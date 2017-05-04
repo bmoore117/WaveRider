@@ -26,3 +26,7 @@ class AnalyzedMarketDay(val rsi: RSI, val MACD: MACD, val ma200: MovingAverage,
     rsi.features ++ MACD.features ++ ma200.features ++ ma100.features ++ ma50.features ++ ma25.features ++ ma15.features ++ ma10.features ++ ma5.features ++ avgTrueRange.features ++ bBand.features ++ onBalanceVolume.features ++ trend.features
   }
 }
+
+object AnalyzedMarketDay {
+  val numberOfFeatures = 17
+}
