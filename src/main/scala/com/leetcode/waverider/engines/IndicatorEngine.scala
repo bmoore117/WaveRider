@@ -117,7 +117,7 @@ class IndicatorEngine(val market: Adapter) {
 
     analyzedMarketDays.indices.foreach(i => {
       val day = analyzedMarketDays(i)
-      if(i < analyzedMarketDays.length - 1) {
+      if(i < analyzedMarketDays.length - 1 && day.features.forall(value => !value.isEmpty)) {
         writer.writeRow(day.features ++ pointWiseTrendChanges(i).features)
       }
     })
