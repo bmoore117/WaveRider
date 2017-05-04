@@ -5,7 +5,12 @@ package com.leetcode.waverider.data
   */
 class Trend(val startIdx:Option[Int], val endIdx:Option[Int], val trendPctDelta:Option[Double], val trendDuration:Option[Int]) extends Writable {
   override def headers: List[String] = {
-    List("priceChange", "durationChange")
+
+    if(trendPctDelta.isDefined) {
+      List("EOTPC", "TD")
+    } else {
+      List("CURPC", "TD")
+    }
   }
 
   override def features: List[String] = {

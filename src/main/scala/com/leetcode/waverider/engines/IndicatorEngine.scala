@@ -305,24 +305,24 @@ class IndicatorEngine(val market: Adapter) {
   }
 
   def trend(today: RawMarketDay): Trend = {
-    if(lastInflectionIdx == 0) {
+    if(rawDays.length == 1) {
       new Trend(None, None, None, None)
     } else {
 
-      val valueChg = rawDays(lastInflectionIdx).close - rawDays.last.close / rawDays(lastInflectionIdx).close
-      val duration = (rawDays.length - 1) - lastInflectionIdx
-
       if(isTrendUp) {
         if(rawDays.last.close < rawDays(rawDays.length - 2).close) {
-          lastInflectionIdx = rawDays.length - 1
+          lastInflectionIdx = rawDays.length - 2
           isTrendUp = false
         }
       } else if(!isTrendUp) {
         if(rawDays.last.close > rawDays(rawDays.length - 2).close) {
-          lastInflectionIdx = rawDays.length - 1
+          lastInflectionIdx = rawDays.length - 2
           isTrendUp = true
         }
       }
+
+      val valueChg = (rawDays.last.close - rawDays(lastInflectionIdx).close) / rawDays(lastInflectionIdx).close
+      val duration = (rawDays.length - 1) - lastInflectionIdx
 
       new Trend(None, None, Some(valueChg), Some(duration))
     }

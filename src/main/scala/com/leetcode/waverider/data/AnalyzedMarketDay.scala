@@ -16,8 +16,6 @@ class AnalyzedMarketDay(val rsi: RSI, val MACD: MACD, val ma200: MovingAverage,
                         val onBalanceVolume: OnBalanceVolume, trend:Trend) extends Writable {
 
 
-
-
   override def toString = s"AnalyzedMarketDay($rsi, $MACD, $ma200, $ma100, $ma50, $ma25, $ma15, $ma10, $ma5, $avgTrueRange, $bBand, $onBalanceVolume)"
 
   override def headers: List[String] = {
