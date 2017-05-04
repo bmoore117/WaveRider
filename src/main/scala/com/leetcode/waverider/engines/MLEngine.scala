@@ -43,7 +43,7 @@ class MLEngine(val trainPath:String, val testPath:String) {
       .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
       .learningRate(learningRate)
       .weightInit(WeightInit.XAVIER)
-      .updater(Updater.RMSPROP)
+      .updater(Updater.ADAM)
       .list()
       .layer(0, new DenseLayer.Builder().nIn(AnalyzedMarketDay.numberOfFeatures).nOut(AnalyzedMarketDay.numberOfFeatures)
         .activation(Activation.TANH)
