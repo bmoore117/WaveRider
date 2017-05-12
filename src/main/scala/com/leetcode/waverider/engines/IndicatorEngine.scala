@@ -36,46 +36,6 @@ class IndicatorEngine(val market: Adapter) {
   var lastInflectionIdx:Int = 0
   var isTrendUp:Boolean = false
 
-  def writeLabeling(): Unit = {
-
-    val threshold = 5
-
-    val writer = CSVWriter.open(new File("trainLabels.csv"))
-    writer.writeRow(List("index", "tradeable"))
-
-    rawDays.indices.foreach(i => {
-      //if the next 5 days fall within the range of data we have
-      if(i+5 <= rawDays.length - 1) {
-        val startingPoint = rawDays(i).close
-
-        var lowestPct:Double = 0
-        var highestPct:Double = 0
-
-        for(j <- i+1 to i+threshold) {
-          val pctChange = (rawDays(j).close - startingPoint) / startingPoint
-
-          if(pctChange > highestPct) {
-            highestPct = pctChange
-          }
-
-          if(pctChange < lowestPct) {
-            lowestPct = pctChange
-          }
-        }
-
-        if(highestPct >= threshold / 100.0 && lowestPct <= threshold / 1000.0) {
-          writer.writeRow(List((i+1).toString, "1"))
-        } else {
-          writer.writeRow(List((i+1).toString, "0"))
-        }
-      } else {
-        writer.writeRow(List((i+1).toString, "0"))
-      }
-    })
-
-    writer.close()
-  }
-
   def analyzeNext(day: RawMarketDay): Unit = {
     rawDays.append(day)
 
