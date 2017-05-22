@@ -1,6 +1,6 @@
 package com.leetcode.waverider.utils
 
-import com.mongodb.{BasicDBObject, MongoClient}
+import com.mongodb.{BasicDBList, BasicDBObject, MongoClient}
 import org.bson.{BSONObject, Document}
 import org.bson.types.ObjectId
 
@@ -43,8 +43,15 @@ object StateUtils {
     val obj = new BasicDBObject()
     obj.append("_id", new ObjectId(sampleId.toString(16)))
 
-    val sample = collection.find(obj).first()
+    val result = collection.find(obj).first()
 
+    val list = result.get("sample").asInstanceOf[BasicDBList]
+
+    val samples = list.toArray(new Array[BasicDBList](list.size()))
+
+    samples.foreach(sample => {
+
+    })
     //turn sample array into native objs
 
     //do correlations
