@@ -32,6 +32,12 @@ object MathUtils {
 
     ySum = math.sqrt(ySum)
 
-    crossSum / (xSum*ySum)
+    val test = crossSum / (xSum*ySum)
+
+    if(test.isNaN) {
+      0
+    } else {
+      test
+    }
   }
 }

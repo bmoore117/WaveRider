@@ -12,7 +12,7 @@ class Market extends MDP[MarketState, Int, DiscreteSpace] {
   val firstSampleId:BigInt = StateUtils.getFirstSampleId()
 
   val actionSpace = new DiscreteSpace(3)
-  val state:MarketState = _
+  val state:MarketState = null
 
   override def newInstance(): MDP[MarketState, Int, DiscreteSpace] = {
     val market = new Market() //TODO: how parameterize this
@@ -28,7 +28,9 @@ class Market extends MDP[MarketState, Int, DiscreteSpace] {
   }
 
   override def reset(): MarketState = {
-    new MarketState(StateUtils.getState(firstSampleId), firstSampleId)
+    val sample = StateUtils.getNextSample(None)
+    val state = StateUtils.sampleToCluster(sample)
+    new MarketState(state, firstSampleId)
   }
 
   override def step(action: Int): StepReply[MarketState] = ???

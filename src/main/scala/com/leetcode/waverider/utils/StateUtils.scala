@@ -1,9 +1,14 @@
 package com.leetcode.waverider.utils
 
-import com.mongodb.{BasicDBList, BasicDBObject, MongoClient}
-import org.bson.{BSONObject, Document}
+import java.util
+
+import com.leetcode.waverider.data.Sample
+import com.mongodb.client.model.Filters
+import com.mongodb.{BasicDBObject, MongoClient}
+import org.bson.Document
 import org.bson.types.ObjectId
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -19,7 +24,10 @@ object StateUtils {
     val High, Low, Volume, Last, BaseVolume, Bid, Ask, OpenBuyOrders, OpenSellOrders, PrevDay = Value
   }
 
+  val client = new MongoClient()
   val clusterCombinations:Seq[Set[Features.Feature]] = preComputeSetIndices()
+
+  val observedStates = new mutable.ListBuffer[String]()
 
   def preComputeSetIndices(): Seq[Set[Features.Feature]] = {
     val set = Set(Features.High, Features.Low, Features.Volume, Features.Last, Features.BaseVolume, Features.Bid, Features.Ask, Features.OpenBuyOrders, Features.OpenSellOrders, Features.PrevDay)
@@ -33,36 +41,73 @@ object StateUtils {
     builder.toList
   }
 
-  val client = new MongoClient()
-
-  def getState(sampleId:BigInt):Int = {
+  def getNextSample(sampleIdx:Option[BigInt]):Map[String, Array[Double]] = {
 
     val db = client.getDatabase("db")
     val collection = db.getCollection("marketdata")
 
-    val obj = new BasicDBObject()
-    obj.append("_id", new ObjectId(sampleId.toString(16)))
+    var result:Document = null
 
-    val result = collection.find(obj).first()
+    if(sampleIdx.isDefined) {
+      val sampleId = new ObjectId(sampleIdx.get.toString(16))
+      result = collection.find(Filters.gt("_id", sampleId)).first()
+    } else {
+      result = collection.find().first()
+    }
 
-    val list = result.get("sample").asInstanceOf[BasicDBList]
+    val sample = result.get("sample").asInstanceOf[util.ArrayList[Document]]
+    val highs, lows, volumes, lasts, baseVolumes, bids, asks, openBuyOrders, openSellOrders, prevDays = Array.ofDim[Double](sample.size())
 
-    val samples = list.toArray(new Array[BasicDBList](list.size()))
+    for(i <- 0 until sample.size()) {
+      val doc = sample.get(i)
+      highs(i) = doc.getDouble("High")
+      lows(i) = doc.getDouble("Low")
+      volumes(i) = doc.getDouble("Volume")
+      lasts(i) = doc.getDouble("Last")
+      baseVolumes(i) = doc.getDouble("BaseVolume")
+      bids(i) = doc.getDouble("Bid")
+      asks(i) = doc.getDouble("Ask")
+      openBuyOrders(i) = doc.getInteger("OpenBuyOrders").doubleValue()
+      openSellOrders(i) = doc.getInteger("OpenSellOrders").doubleValue()
+      prevDays(i) = doc.getDouble("PrevDay")
+    }
 
-    samples.foreach(sample => {
+    Map("high" -> highs, "low" -> lows, "volume" -> volumes, "last" -> lasts, "baseVolume" -> baseVolumes,
+      "bid" -> bids, "ask" -> asks, "openBuyOrders" -> openBuyOrders, "openSellOrders" -> openSellOrders, "prevDay" -> prevDays)
+  }
 
-    })
-    //turn sample array into native objs
+  def sampleToCluster(sample:Map[String, Array[Double]]): Int = {
 
-    //do correlations
-    //then indices
+    val keyList = sample.keySet.toIndexedSeq
+    val builder = new StringBuilder
 
-    1
+    for(i <- keyList.indices) {
+      val firstName = keyList(i)
+      val first = sample(firstName)
+
+      for(j <- i + 1 until keyList.length) {
+        val secondName = keyList(j)
+        val second = sample(secondName)
+
+        var corr = MathUtils.sampleCorrelation(first, second)
+        if(corr < 0.05) {
+          corr = 0
+        }
+        builder.append(math.signum(corr))
+      }
+    }
+
+    val state = builder.mkString
+
+    if(!observedStates.contains(state)) {
+      observedStates.append(state)
+    }
+
+    observedStates.indexOf(state)
   }
 
   def getMaxSampleId():BigInt = {
     val db = client.getDatabase("db")
-
     val collection = db.getCollection("marketdata")
     val result = collection.find().sort(new BasicDBObject("_id", -1)).first()
 
@@ -71,18 +116,9 @@ object StateUtils {
 
   def getFirstSampleId():BigInt = {
     val db = client.getDatabase("db")
-
     val collection = db.getCollection("marketdata")
-    val first = collection.find().first().getObjectId("_id")
+    val result = collection.find().first()
 
-    BigInt.apply(first.toHexString, 16)
-  }
-
-  def enumState(doc: Document): Int = {
-
-
-
-
-   1
+    BigInt.apply(result.getObjectId("_id").toHexString, 16)
   }
 }
