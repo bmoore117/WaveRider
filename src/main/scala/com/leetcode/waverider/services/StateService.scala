@@ -3,7 +3,6 @@ package com.leetcode.waverider.services
 import com.leetcode.waverider.utils.MathUtils
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by Ben on 5/21/2017.
@@ -18,7 +17,7 @@ class StateService {
     val High, Low, Volume, Last, BaseVolume, Bid, Ask, OpenBuyOrders, OpenSellOrders, PrevDay = Value
   }
 
-  /*
+  /*/*
     * Precompute the possible clusterings, by running through the subsets of the different features
     * @return A sequence of sets of features, where each set is a indexed cluster in the main sequence
     */
@@ -32,7 +31,7 @@ class StateService {
     })
 
     builder.toList
-  }
+  }*/
 
   val observedStates = new mutable.ListBuffer[String]()
 
