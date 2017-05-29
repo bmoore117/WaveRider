@@ -64,6 +64,11 @@ class StateService {
       }
     }
 
+    val prices = sample("Last")
+
+    val priceDirection = math.signum(prices.last - prices.head)
+    builder.append(priceDirection)
+
     val state = builder.mkString
 
     if(!observedStates.contains(state)) {
