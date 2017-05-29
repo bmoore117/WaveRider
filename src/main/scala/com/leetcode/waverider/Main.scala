@@ -1,6 +1,6 @@
 package com.leetcode.waverider
 
-import com.leetcode.waverider.agent.TradeAgent
+import com.leetcode.waverider.agent.SimulationTradeAgent
 import com.leetcode.waverider.engines.QEngine
 import com.leetcode.waverider.services.{DBService, StateService}
 
@@ -14,7 +14,7 @@ object Main {
     val dBService = new DBService
     val stateService = new StateService
     val qEngine = new QEngine(0.2, 0.5, 0.05)
-    val tradeAgent = new TradeAgent
+    val tradeAgent = new SimulationTradeAgent
 
     var sample = dBService.getNextSample
 
