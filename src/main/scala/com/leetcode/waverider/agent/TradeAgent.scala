@@ -10,4 +10,9 @@ class TradeAgent {
 
     0
   }
+
+  def getValidActions(): Seq[Int] = {
+
+    Nil
+  }
 }

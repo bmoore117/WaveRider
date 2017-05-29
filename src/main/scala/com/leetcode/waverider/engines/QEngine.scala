@@ -7,11 +7,16 @@ import scala.collection.mutable
   */
 class QEngine(val learningRate:Double, val discountRate:Double, val randomActionProbability:Double) {
 
-  val transitionDistribution = new mutable.HashMap[Int, mutable.HashMap[Int, Int]]
+  private val transitionDistribution = new mutable.HashMap[Int, mutable.HashMap[Int, Int]]
 
-  val qMatrix = new mutable.HashMap[Int, mutable.HashMap[Int, Double]]
+  private val qMatrix = new mutable.HashMap[Int, mutable.HashMap[Int, Double]]
 
-  var lastState:Option[Int] = None
+  private val rng = scala.util.Random
+
+  private val range = 1 to 100
+  private val winningNumbers = Set(47, 99, 89, 26, 33)
+
+  private var lastState:Option[Int] = None
 
   def updateTransitionMatrix(state:Int): Unit = {
     if(lastState.isDefined) {
@@ -60,30 +65,45 @@ class QEngine(val learningRate:Double, val discountRate:Double, val randomAction
     None
   }
 
-  def getBestAction(state:Int): Int = {
-    val actions = qMatrix.get(state)
+  def getBestAction(state:Int, validActions:Seq[Int]): Int = {
 
-    if(actions.isDefined) {
-      var bestPair = (0, Double.MinValue)
+    if (!shouldTakeRandomAction()) {
 
-      actions.get.foreach(pair => {
-        if(pair._2 > bestPair._2) {
-          bestPair = pair
+      val actions = qMatrix.get(state)
+
+      if (actions.isDefined) {
+
+        val remainingActions = actions.get.filter(pair => !validActions.contains(pair._1))
+
+        if(remainingActions.nonEmpty) {
+          var bestPair = (0, Double.MinValue)
+
+          remainingActions.foreach(pair => {
+            if (pair._2 > bestPair._2) {
+              bestPair = pair
+            }
+          })
+
+          return bestPair._1
         }
-      })
 
-      bestPair._1
-    } else {
-      //TODO random action here
-      1
+      }
     }
+    validActions(rng.nextInt(validActions.length))
   }
 
-  def getNextStateBestQ(state:Int): Double = {
+  def shouldTakeRandomAction():Boolean = {
+    val drawing = rng.nextInt(100) + 1
+
+    winningNumbers.contains(drawing)
+  }
+
+
+  def getNextStateBestQ(state:Int, validActions: Seq[Int]): Double = {
     val nextState = getMostLikelyNextState(state)
 
     val q = if(nextState.isDefined) {
-      val nextStateBestAction = getBestAction(nextState.get)
+      val nextStateBestAction = getBestAction(nextState.get, validActions)
       qMatrix(nextState.get)(nextStateBestAction)
     } else {
       0
@@ -92,20 +112,20 @@ class QEngine(val learningRate:Double, val discountRate:Double, val randomAction
     q
   }
 
-  def updateQMatrix(state:Int, action:Int, reward:Double): Unit = {
+  def updateQMatrix(state:Int, action:Int, reward:Double, validActions: Seq[Int]): Unit = {
     val stateActionValues = qMatrix.get(state)
 
     if(stateActionValues.isDefined) {
       val actionValue = stateActionValues.get.get(action)
 
       if(actionValue.isDefined) {
-        stateActionValues.get.put(action, actionValue.get + learningRate*(reward + discountRate*getNextStateBestQ(state) - actionValue.get))
+        stateActionValues.get.put(action, actionValue.get + learningRate*(reward + discountRate*getNextStateBestQ(state, validActions) - actionValue.get))
       } else {
-        stateActionValues.get.put(action, learningRate*(reward + discountRate*getNextStateBestQ(state)))
+        stateActionValues.get.put(action, learningRate*(reward + discountRate*getNextStateBestQ(state, validActions)))
       }
     } else {
       val actionValues = new mutable.HashMap[Int, Double]()
-      actionValues.put(action, learningRate*(reward + discountRate*getNextStateBestQ(state))) //where 1 is currently placeholder for reward
+      actionValues.put(action, learningRate*(reward + discountRate*getNextStateBestQ(state, validActions))) //where 1 is currently placeholder for reward
       qMatrix.put(state, actionValues)
     }
   }

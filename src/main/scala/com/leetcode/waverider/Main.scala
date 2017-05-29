@@ -21,9 +21,11 @@ object Main {
     while(sample.isDefined) {
       val state = stateService.sampleToCluster(sample.get)
       qEngine.updateTransitionMatrix(state)
-      val action = qEngine.getBestAction(state)
+
+      val action = qEngine.getBestAction(state, tradeAgent.getValidActions())
       val reward = tradeAgent.takeAction(action)
-      qEngine.updateQMatrix(state, action, reward)
+
+      qEngine.updateQMatrix(state, action, reward, tradeAgent.getValidActions())
 
       sample = dBService.getNextSample
     }
