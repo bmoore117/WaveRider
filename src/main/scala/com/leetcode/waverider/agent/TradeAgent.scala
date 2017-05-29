@@ -6,4 +6,8 @@ package com.leetcode.waverider.agent
   */
 class TradeAgent {
 
+  def takeAction(action:Int): Double = {
+
+    0
+  }
 }

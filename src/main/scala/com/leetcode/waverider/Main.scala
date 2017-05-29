@@ -1,5 +1,7 @@
 package com.leetcode.waverider
 
+import com.leetcode.waverider.agent.TradeAgent
+import com.leetcode.waverider.engines.QEngine
 import com.leetcode.waverider.services.{DBService, StateService}
 
 /**
@@ -11,10 +13,18 @@ object Main {
 
     val dBService = new DBService
     val stateService = new StateService
+    val qEngine = new QEngine(0.2, 0.5, 0.05)
+    val tradeAgent = new TradeAgent
 
     var sample = dBService.getNextSample
+
     while(sample.isDefined) {
-      println(stateService.sampleToCluster(sample.get))
+      val state = stateService.sampleToCluster(sample.get)
+      qEngine.updateTransitionMatrix(state)
+      val action = qEngine.getBestAction(state)
+      val reward = tradeAgent.takeAction(action)
+      qEngine.updateQMatrix(state, action, reward)
+
       sample = dBService.getNextSample
     }
   }
