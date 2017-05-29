@@ -14,7 +14,7 @@ object Main {
     val dBService = new DBService
     val stateService = new StateService
     val qEngine = new QEngine(0.2, 0.5, 0.05)
-    val tradeAgent = new SimulationTradeAgent
+    val tradeAgent = new SimulationTradeAgent(100)
 
     var sample = dBService.getNextSample
 
@@ -22,10 +22,10 @@ object Main {
       val state = stateService.sampleToCluster(sample.get)
       qEngine.updateTransitionMatrix(state)
 
-      val action = qEngine.getBestAction(state, tradeAgent.getValidActions())
-      val reward = tradeAgent.takeAction(action)
+      val action = qEngine.getBestAction(state, tradeAgent.getValidActions(0))
+      val reward = tradeAgent.takeAction(action, dBService.getPriceForCurrentSample)
 
-      qEngine.updateQMatrix(state, action, reward, tradeAgent.getValidActions())
+      qEngine.updateQMatrix(state, action, reward, tradeAgent.getValidActions(0))
 
       sample = dBService.getNextSample
     }

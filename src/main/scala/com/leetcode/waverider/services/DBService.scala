@@ -71,4 +71,21 @@ class DBService extends DataSource {
     result.getObjectId("_id")
   }
 
+  def getPriceForCurrentSample:Double = {
+    val db = client.getDatabase("db")
+    val collection = db.getCollection("marketdata")
+
+    val result = collection.find(Filters.eq("_id", lastSample.get)).first()
+    val sample = result.get("sample").asInstanceOf[util.ArrayList[Document]]
+
+    val asks = Array.ofDim[Double](sample.size())
+
+    for(i <- 0 until sample.size()) {
+      val doc = sample.get(i)
+      asks(i) = doc.getDouble("Ask")
+    }
+
+    asks.sum / asks.length
+  }
+
 }
