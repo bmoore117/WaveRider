@@ -33,6 +33,7 @@ class DBService extends DataSource {
       result = collection.find().first()
     }
     lastSample = Some(result.getObjectId("_id"))
+    //println(result.getObjectId().toHexString)
 
     val sample = result.get("sample").asInstanceOf[util.ArrayList[Document]]
     val highs, lows, volumes, lasts, baseVolumes, bids, asks, openBuyOrders, openSellOrders, prevDays = Array.ofDim[Double](sample.size())

@@ -11,7 +11,7 @@ class QEngine(val learningRate:Double, val discountRate:Double, val randomAction
 
   private val qMatrix = new mutable.HashMap[Int, mutable.HashMap[Int, Double]]
 
-  private val rng = scala.util.Random
+  private val rng = new scala.util.Random(123)
 
   private val range = 1 to 100
   private val winningNumbers = Set(47, 99, 89, 26, 33)
@@ -103,8 +103,21 @@ class QEngine(val learningRate:Double, val discountRate:Double, val randomAction
     val nextState = getMostLikelyNextState(state)
 
     val q = if(nextState.isDefined) {
-      val nextStateBestAction = getBestAction(nextState.get, validActions)
-      qMatrix(nextState.get)(nextStateBestAction)
+      val actions = qMatrix.get(nextState.get)
+      var bestPair = (0, Double.MinValue)
+
+      actions.get.foreach(pair => {
+        if(pair._2 > bestPair._2) {
+          bestPair = pair
+        }
+      })
+
+      if(bestPair._2 == Double.MinValue) { //if we didn't find anything
+        0
+      } else {
+        bestPair._2
+      }
+
     } else {
       0
     }

@@ -18,16 +18,30 @@ object Main {
 
     var sample = dBService.getNextSample
 
-    while(sample.isDefined) {
+    val initializationPeriod = 50
+    var i = 0
+    while(sample.get("last").length > 0) {
+
+      if(i == 50) {
+        tradeAgent.reset()
+      }
+
       val state = stateService.sampleToCluster(sample.get)
       qEngine.updateTransitionMatrix(state)
 
       val action = qEngine.getBestAction(state, tradeAgent.getValidActions(0))
-      val reward = tradeAgent.takeAction(action, dBService.getPriceForCurrentSample)
+      val reward = tradeAgent.takeAction(action, dBService.getPriceForCurrentSample, i < 50)
 
       qEngine.updateQMatrix(state, action, reward, tradeAgent.getValidActions(0))
 
       sample = dBService.getNextSample
+      println(tradeAgent.cash)
+      i = i + 1
     }
+
+    if(i > 50) {
+      println(tradeAgent.cash)
+    }
+
   }
 }

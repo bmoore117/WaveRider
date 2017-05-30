@@ -17,22 +17,6 @@ class StateService {
     val High, Low, Volume, Last, BaseVolume, Bid, Ask, OpenBuyOrders, OpenSellOrders, PrevDay = Value
   }
 
-  /*/*
-    * Precompute the possible clusterings, by running through the subsets of the different features
-    * @return A sequence of sets of features, where each set is a indexed cluster in the main sequence
-    */
-  val clusterCombinations:Seq[Set[Features.Feature]] = {
-    val set = Set(Features.High, Features.Low, Features.Volume, Features.Last, Features.BaseVolume, Features.Bid, Features.Ask, Features.OpenBuyOrders, Features.OpenSellOrders, Features.PrevDay)
-
-    val builder = new ArrayBuffer[Set[Features.Feature]]()
-
-    set.subsets().foreach(subset => {
-      builder.append(subset)
-    })
-
-    builder.toList
-  }*/
-
   val observedStates = new mutable.ListBuffer[String]()
 
   /**
@@ -64,7 +48,7 @@ class StateService {
       }
     }
 
-    val prices = sample("Last")
+    val prices = sample("last")
 
     val priceDirection = math.signum(prices.last - prices.head)
     builder.append(priceDirection)

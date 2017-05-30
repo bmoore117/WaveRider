@@ -20,22 +20,26 @@ class SimulationTradeAgent(var cash:Double) {
   private val portfolio = new mutable.HashMap[Double, Double]()
 
   //negative actions sell, positive buy
-  private val actions = -10 to 10
+  private val actions = -9 to 9
 
   //TODO can this be simplified?
-  def takeAction(action:Int, price:Double): Double = {
+  def takeAction(action:Int, price:Double, simulation:Boolean): Double = {
+
     if(action == 0) {
       0
     } else if(action > 0) {
       val spendAmount = cash * action/10
+      if(!simulation) {
+        cash = cash - spendAmount
+      }
       val purchaseAmount = spendAmount / price
       val tranche = portfolio.getOrElseUpdate(price, 0)
       portfolio.update(price, tranche + purchaseAmount)
       0
     } else {
-      val unitsToSell = portfolio.values.sum * math.abs(action/10)
+      val unitsToSell = portfolio.values.sum * math.abs(action/10.0)
       var totalSold = 0.0
-      while(totalSold != unitsToSell) {
+      while(totalSold != unitsToSell && portfolio.nonEmpty) {
         val lowestTranche = portfolio.keySet.min
         var lowestTrancheUnits = portfolio(lowestTranche)
 
@@ -53,11 +57,31 @@ class SimulationTradeAgent(var cash:Double) {
         }
       }
 
+      if(!simulation) {
+        cash = cash + price*unitsToSell
+      }
+
      price * unitsToSell
     }
   }
 
+  def reset() = {
+    cash = 100
+    portfolio.clear()
+  }
+
   def getValidActions(price:Double): Seq[Int] = {
-    actions //TODO implement trading fee restrictions
+
+    var validActions = actions
+
+    if(portfolio.isEmpty) {
+      validActions.filter(action => action < 0)
+    }
+
+    if(cash == 0) {
+      validActions.filter(action => action > 0)
+    }
+
+    validActions //TODO implement trading fee restrictions
   }
 }
