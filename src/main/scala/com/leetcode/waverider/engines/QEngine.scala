@@ -8,11 +8,11 @@ import scala.collection.mutable
 class QEngine(val learningRate:Double, val discountRate:Double, val randomActionProbability:Double) {
 
   private val transitionDistribution = new mutable.HashMap[Int, mutable.HashMap[Int, Int]]
-
   private val qMatrix = new mutable.HashMap[Int, mutable.HashMap[Int, Double]]
 
-  private val rng = new scala.util.Random(123)
+  var qMatrixHits:Int = 0
 
+  private val rng = new scala.util.Random(123)
   private val range = 1 to 100
   private val winningNumbers = Set(47, 99, 89, 26, 33)
 
@@ -73,7 +73,7 @@ class QEngine(val learningRate:Double, val discountRate:Double, val randomAction
 
       if (actions.isDefined) {
 
-        val remainingActions = actions.get.filter(pair => !validActions.contains(pair._1))
+        val remainingActions = actions.get.filter(pair => validActions.contains(pair._1))
 
         if(remainingActions.nonEmpty) {
           var bestPair = (0, Double.MinValue)
@@ -84,6 +84,7 @@ class QEngine(val learningRate:Double, val discountRate:Double, val randomAction
             }
           })
 
+          qMatrixHits = qMatrixHits + 1
           return bestPair._1
         }
 

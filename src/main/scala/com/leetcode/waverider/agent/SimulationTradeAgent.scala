@@ -39,40 +39,46 @@ class SimulationTradeAgent(var cash:Double) {
     } else {
       val unitsToSell = portfolio.values.sum * math.abs(action/10.0)
       var totalSold = 0.0
+      var reward = 0.0
+
       while(totalSold != unitsToSell && portfolio.nonEmpty) {
-        val lowestTranche = portfolio.keySet.min
-        var lowestTrancheUnits = portfolio(lowestTranche)
+        val lowestTranchePrice = portfolio.keySet.min
+        var lowestTrancheUnits = portfolio(lowestTranchePrice)
+
+        val priceDiff = price - lowestTranchePrice
 
         if(lowestTrancheUnits > unitsToSell) {
           lowestTrancheUnits = lowestTrancheUnits - unitsToSell
           totalSold = unitsToSell
-          portfolio.update(lowestTranche, lowestTrancheUnits)
+          portfolio.update(lowestTranchePrice, lowestTrancheUnits)
         } else if(lowestTrancheUnits == unitsToSell) {
           lowestTrancheUnits = lowestTrancheUnits - unitsToSell
           totalSold = unitsToSell
-          portfolio.remove(lowestTranche)
+          portfolio.remove(lowestTranchePrice)
         } else { //lowestTrancheUnits < unitsToSell
           totalSold = totalSold + lowestTrancheUnits
-          portfolio.remove(lowestTranche)
+          portfolio.remove(lowestTranchePrice)
         }
+
+        reward += priceDiff * totalSold
       }
 
       if(!simulation) {
         cash = cash + price*unitsToSell
       }
 
-     price * unitsToSell
+     reward
     }
   }
 
-  def reset() = {
+  def reset(): Unit = {
     cash = 100
     portfolio.clear()
   }
 
   def getValidActions(price:Double): Seq[Int] = {
 
-    var validActions = actions
+    val validActions = actions
 
     if(portfolio.isEmpty) {
       validActions.filter(action => action < 0)
@@ -83,5 +89,9 @@ class SimulationTradeAgent(var cash:Double) {
     }
 
     validActions //TODO implement trading fee restrictions
+  }
+
+  def getPortfolioValue(price:Double):Double = {
+    portfolio.values.sum*price + cash
   }
 }

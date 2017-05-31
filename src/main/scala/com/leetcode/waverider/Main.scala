@@ -29,19 +29,18 @@ object Main {
       val state = stateService.sampleToCluster(sample.get)
       qEngine.updateTransitionMatrix(state)
 
+      val price = dBService.getPriceForCurrentSample
+
       val action = qEngine.getBestAction(state, tradeAgent.getValidActions(0))
-      val reward = tradeAgent.takeAction(action, dBService.getPriceForCurrentSample, i < 50)
+      val reward = tradeAgent.takeAction(action, price, i < 50)
 
       qEngine.updateQMatrix(state, action, reward, tradeAgent.getValidActions(0))
 
       sample = dBService.getNextSample
-      println(tradeAgent.cash)
+      println("Iteration: " + i + " state: " + state + " action: " + action + " reward: " + reward + " final portfolio value: " + tradeAgent.getPortfolioValue(price))
       i = i + 1
     }
 
-    if(i > 50) {
-      println(tradeAgent.cash)
-    }
-
+    println(qEngine.qMatrixHits)
   }
 }
