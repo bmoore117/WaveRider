@@ -52,8 +52,8 @@ class DBService extends DataSource {
       prevDays(i) = doc.getDouble("PrevDay")
     }
 
-    Some(Map("high" -> highs, "low" -> lows, "volume" -> volumes, "last" -> lasts, "baseVolume" -> baseVolumes,
-      "bid" -> bids, "ask" -> asks, "openBuyOrders" -> openBuyOrders, "openSellOrders" -> openSellOrders, "prevDay" -> prevDays))
+    Some(Map("volume" -> volumes, "last" -> lasts, "baseVolume" -> baseVolumes,
+      "bid" -> bids, "ask" -> asks, "openBuyOrders" -> openBuyOrders, "openSellOrders" -> openSellOrders))
   }
 
   def getMaxSampleId:ObjectId = {
