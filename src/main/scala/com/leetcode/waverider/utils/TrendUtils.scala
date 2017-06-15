@@ -3,13 +3,14 @@ package com.leetcode.waverider.utils
 import com.leetcode.waverider.data.Trend
 
 import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 /**
   * Created by Ben on 4/27/2017.
   */
 object TrendUtils {
 
-  def findLocalMaxima(list:List[Double]):List[Int] = {
+  def findLocalMaxima(list: List[Double]): List[Int] = {
 
     if(list.length < 2) {
       return List[Int]()
@@ -45,7 +46,7 @@ object TrendUtils {
     results.toList
   }
 
-  def findLocalMinima(list:List[Double]):List[Int] = {
+  def findLocalMinima(list: List[Double]): List[Int] = {
 
     if(list.length < 2) {
       return List[Int]()
@@ -81,14 +82,20 @@ object TrendUtils {
     results.toList
   }
 
-  def buildTrendData(prices:List[Double]):List[Trend] = {
+  /**
+    * This method takes in an asset price time series, and finds the inflection points in that series - i.e. the points
+    * at which the price trend direction changes
+    * @param prices
+    * @return
+    */
+  def buildTrendData(prices: List[Double]): List[Trend] = {
 
     val max = findLocalMaxima(prices)
     val min = findLocalMinima(prices)
 
     val inflectionPts = (List(0) ++ max ++ min ++ List(prices.length - 1)).sortBy(i => i)
 
-    val trends = new mutable.ArrayBuffer[Trend]()
+    val trends = new ListBuffer[Trend]()
 
     var prevPoint = -1
 
@@ -110,7 +117,32 @@ object TrendUtils {
     trends.toList
   }
 
-  def findEndOfTrendChanges(prices:List[Double], trends:List[Trend]):List[Trend] = {
+  def buildTrendData(prices: List[Double], trendDuration: Int): List[Trend] = {
+
+    val trends = new ListBuffer[Trend]
+
+    prices.indices.foreach(i => {
+      if(i + trendDuration < prices.length) {
+        val start = prices(i)
+        val end = prices(i + trendDuration)
+
+        val trend = end / start - 1 // - 1 for 100%
+        trends.append(new Trend(Some(i), Some(i + trendDuration), Some(trend), Some(trendDuration)))
+      }
+    })
+
+    trends.toList
+  }
+
+  /**
+    * This method takes in an asset price time series, and a list of inflection points for that series - the points at
+    * which the trend changed direction, and finds the percent change from one point to another, returned in a list of
+    * Trend objects
+    * @param prices
+    * @param trends
+    * @return
+    */
+  def findEndOfTrendChanges(prices: List[Double], trends: List[Trend]): List[Trend] = {
 
     val results = new mutable.ArrayBuffer[Trend]()
 
@@ -139,5 +171,4 @@ object TrendUtils {
 
     results.toList
   }
-
 }

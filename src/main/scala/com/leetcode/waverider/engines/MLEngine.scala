@@ -21,7 +21,6 @@ import org.nd4j.linalg.lossfunctions.LossFunctions
   */
 class MLEngine(val trainPath:String, val testPath:String) {
 
-
   val seed = 12345
   val iterations = 10
   val nEpochs = 200

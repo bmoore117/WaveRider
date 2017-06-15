@@ -1,32 +1,30 @@
 package com.leetcode.waverider.data
 
-import com.leetcode.waverider.data.indicators.momentum.RSI
-import com.leetcode.waverider.data.indicators.trend.{MACD, MovingAverage}
-import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, BBand}
-import com.leetcode.waverider.data.indicators.volume.OnBalanceVolume
+import scala.collection.mutable.ListBuffer
 
 /**
   * Created by Ben on 4/19/2017.
   */
-class AnalyzedMarketDay(val rsi: RSI, val MACD: MACD, val ma200: MovingAverage,
-                        val ma100: MovingAverage, val ma50: MovingAverage,
-                        val ma25: MovingAverage, val ma15: MovingAverage,
-                        val ma10: MovingAverage, val ma5: MovingAverage,
-                        val avgTrueRange: AvgTrueRange, val bBand: BBand,
-                        val onBalanceVolume: OnBalanceVolume, trend:Trend) extends Writable {
+class AnalyzedMarketDay(val day: RawMarketDay, val indicators: List[Writable]) extends RawMarketDay with Writable {
 
-
-  override def toString = s"AnalyzedMarketDay($rsi, $MACD, $ma200, $ma100, $ma50, $ma25, $ma15, $ma10, $ma5, $avgTrueRange, $bBand, $onBalanceVolume)"
+  override def toString = s"AnalyzedMarketDay($day, $indicators)"
 
   override def headers: List[String] = {
-    rsi.headers ++ MACD.headers ++ ma200.headers ++ ma100.headers ++ ma50.headers ++ ma25.headers ++ ma15.headers ++ ma10.headers ++ ma5.headers ++ avgTrueRange.headers ++ bBand.headers ++ onBalanceVolume.headers ++ trend.headers
+    val headers = new ListBuffer[String]()
+
+    indicators.foreach(indicator => headers ++ indicator.headers)
+
+    headers.toList
   }
 
   override def features: List[String] = {
-    rsi.features ++ MACD.features ++ ma200.features ++ ma100.features ++ ma50.features ++ ma25.features ++ ma15.features ++ ma10.features ++ ma5.features ++ avgTrueRange.features ++ bBand.features ++ onBalanceVolume.features ++ trend.features
-  }
-}
+    val features = new ListBuffer[String]()
 
-object AnalyzedMarketDay {
-  val numberOfFeatures = 17
+    indicators.foreach(indicator => features ++ indicator.features)
+
+    features.toList
+  }
+
+  def getIndicatorCount:Int = {indicators.length}
+
 }

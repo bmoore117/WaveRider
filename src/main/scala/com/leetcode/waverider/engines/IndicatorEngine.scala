@@ -16,6 +16,11 @@ import com.tictactec.ta.lib.{Core, MAType, MInteger, RetCode}
 
 import scala.collection.mutable.ArrayBuffer
 
+object AnalysisType extends Enumeration {
+  val TREND, CLOSING_CHANGE = Value
+  type AnalysisType = Value
+}
+
 /**
   * Created by Benjamin on 4/15/2017.
   *
@@ -26,7 +31,7 @@ import scala.collection.mutable.ArrayBuffer
   * General utility: average true range, indicates overall volatility. On-balance volume, indicates future trend breakout
   *
   */
-class IndicatorEngine(val market: Adapter) {
+class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.AnalysisType) {
   
   val rawDays = new ArrayBuffer[RawMarketDay]()
   val analyzedMarketDays = new ArrayBuffer[AnalyzedMarketDay]()
@@ -39,51 +44,61 @@ class IndicatorEngine(val market: Adapter) {
   def analyzeNext(day: RawMarketDay): Unit = {
     rawDays.append(day)
 
-    val rsi = RSI()
+    if(analysisType == AnalysisType.TREND) {
+      val rsi = RSI()
+      val macd_result = macd()
+      val ema200 = movingAverage(200, AvgType.EMA)
+      val ema100 = movingAverage(100, AvgType.EMA)
+      val ema50 = movingAverage(50, AvgType.EMA)
+      val ema25 = movingAverage(25, AvgType.EMA)
+      val ema15 = movingAverage(15, AvgType.EMA)
+      val ema10 = movingAverage(10, AvgType.EMA)
+      val ema5 = movingAverage(5, AvgType.EMA)
+      val ema2 = movingAverage(2, AvgType.EMA)
+      val atr = averageTrueRange()
+      val band = bollinger()
+      val obv = OBV()
+      val historicalTrend = trend(day)
 
-    val macd_result = macd()
+      val indicators = List(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, ema2, atr, band, obv, historicalTrend)
+      analyzedMarketDays.append(new AnalyzedMarketDay(day, indicators))
+    } else {
+      val ema200 = movingAverage(200, AvgType.EMA)
+      val ema100 = movingAverage(100, AvgType.EMA)
+      val ema50 = movingAverage(50, AvgType.EMA)
+      val ema25 = movingAverage(25, AvgType.EMA)
+      val ema15 = movingAverage(15, AvgType.EMA)
+      val ema10 = movingAverage(10, AvgType.EMA)
+      val ema5 = movingAverage(5, AvgType.EMA)
+      val ema2 = movingAverage(2, AvgType.EMA)
 
-    val ema200 = movingAverage(200, AvgType.EMA)
-    val ema100 = movingAverage(100, AvgType.EMA)
-    val ema50 = movingAverage(50, AvgType.EMA)
-    val ema25 = movingAverage(25, AvgType.EMA)
-    val ema15 = movingAverage(15, AvgType.EMA)
-    val ema10 = movingAverage(10, AvgType.EMA)
-    val ema5 = movingAverage(5, AvgType.EMA)
-
-    val atr = averageTrueRange()
-
-    val band = bollinger()
-
-    val obv = OBV()
-
-    val historicalTrend = trend(day)
-
-    val analyzedDay = new AnalyzedMarketDay(rsi, macd_result, ema200, ema100, ema50, ema25, ema15, ema10, ema5, atr, band, obv, historicalTrend)
-
-    analyzedMarketDays.append(analyzedDay)
+      val indicators = List(ema200, ema100, ema50, ema25, ema15, ema10, ema5, ema2)
+      analyzedMarketDays.append(new AnalyzedMarketDay(day, indicators))
+    }
   }
 
   def writeAnalysis(): Unit = {
 
     val prices = rawDays.map(day => day.close).toList
 
-    val trends = TrendUtils.buildTrendData(prices)
-
-    val pointWiseTrendChanges = TrendUtils.findEndOfTrendChanges(prices, trends)
+    val trends = if(analysisType == AnalysisType.TREND) {
+      val temp = TrendUtils.buildTrendData(prices)
+      TrendUtils.findEndOfTrendChanges(prices, temp)
+    } else {
+      TrendUtils.buildTrendData(prices, 10)
+    }
 
     val writer = CSVWriter.open(new File("train.csv"))
-    writer.writeRow(analyzedMarketDays.head.headers ++ pointWiseTrendChanges.head.headers)
+    writer.writeRow(analyzedMarketDays.head.headers ++ trends.head.headers)
 
     analyzedMarketDays.indices.foreach(i => {
       val day = analyzedMarketDays(i)
       if(i < analyzedMarketDays.length - 1 && day.features.forall(value => !value.isEmpty)) {
-        writer.writeRow(day.features ++ pointWiseTrendChanges(i).features)
+        writer.writeRow(day.features ++ trends(i).features)
       }
     })
     writer.close()
   }
-
 
   def bollinger(): BBand = {
     val TIME_PERIOD = 21
@@ -191,7 +206,6 @@ class IndicatorEngine(val market: Adapter) {
       val retCode = core.macd(0, close.length - 1, close, FAST_TIME_PERIOD, SLOW_TIME_PERIOD, SIGNAL_PERIOD, new MInteger, new MInteger, macd, macdSignal, macdHist)
 
       if (retCode == RetCode.Success) {
-
         macdObj.fastPeriod = FAST_TIME_PERIOD
         macdObj.slowPeriod = SLOW_TIME_PERIOD
         macdObj.signalPeriod = SIGNAL_PERIOD
@@ -199,7 +213,6 @@ class IndicatorEngine(val market: Adapter) {
         macdObj.macd = Some(macd.head)
         macdObj.macdSignal = Some(macdSignal.head)
         macdObj.macdHist = Some(macdHist.head)
-
       }
     }
 
@@ -243,9 +256,10 @@ class IndicatorEngine(val market: Adapter) {
       val prices = days.map(day => day.close)
       val volume = days.map(day => day.volume)
 
-      val yesterdayOBV = analyzedMarketDays.last.onBalanceVolume
+      val yesterdayOBV = analyzedMarketDays.last.indicators.find(indicator => indicator.isInstanceOf[OnBalanceVolume])
+      val yesterday = yesterdayOBV.get.asInstanceOf[OnBalanceVolume]
 
-      yesterdayOBV.value match {
+      yesterday.value match {
         case Some(obv) =>
           if(prices.head > prices.last) {
             todayOBV.value = Some(obv + volume.last)
