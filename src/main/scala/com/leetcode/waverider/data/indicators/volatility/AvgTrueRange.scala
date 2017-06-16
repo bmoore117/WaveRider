@@ -5,7 +5,7 @@ import com.leetcode.waverider.data.Writable
 /**
   * Created by Ben on 4/17/2017.
   */
-class AvgTrueRange extends Writable{
+class AvgTrueRange(val settings: AvgTrueRangeSettings) extends Writable{
   var value:Option[Double] = None
 
   override def headers: List[String] = {
@@ -16,3 +16,5 @@ class AvgTrueRange extends Writable{
     List(value.getOrElse("").toString)
   }
 }
+
+case class AvgTrueRangeSettings(timePeriod: Int)

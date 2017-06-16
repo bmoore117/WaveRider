@@ -5,17 +5,12 @@ import com.leetcode.waverider.data.Writable
 /**
   * Created by Ben on 4/18/2017.
   */
-class MACD extends Writable {
-  var fastPeriod:Int = _
-  var slowPeriod:Int = _
-  var signalPeriod:Int = _
-
+class MACD(val settings: MACDSettings) extends Writable {
   var macd:Option[Double] = None
   var macdSignal:Option[Double] = None
   var macdHist:Option[Double] = None
 
-
-  override def toString = s"MACD($fastPeriod, $slowPeriod, $signalPeriod, $macd, $macdSignal, $macdHist)"
+  override def toString = s"MACD($macd, $macdSignal, $macdHist, $settings)"
 
   override def headers: List[String] = {
     List("MACD", "MACDSIGNAL")
@@ -25,3 +20,5 @@ class MACD extends Writable {
     List(macd.getOrElse("").toString, macdSignal.getOrElse("").toString)
   }
 }
+
+case class MACDSettings(slowTimePeriod: Int, fastTimePeriod:Int, signalPeriod: Int)

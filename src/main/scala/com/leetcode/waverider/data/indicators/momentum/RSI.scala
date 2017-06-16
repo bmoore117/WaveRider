@@ -5,13 +5,11 @@ import com.leetcode.waverider.data.Writable
 /**
   * Created by Benjamin on 4/18/2017.
   */
-class RSI extends Writable {
+class RSI(val settings: RSISettings) extends Writable {
 
-  var timePeriod:Int = _
   var value:Option[Double] = None
 
-
-  override def toString = s"RSI($timePeriod, $value)"
+  override def toString = s"RSI($settings, $value)"
 
   override def headers: List[String] = {
     List("RSI")
@@ -21,3 +19,5 @@ class RSI extends Writable {
     List(value.getOrElse("").toString)
   }
 }
+
+case class RSISettings(timePeriod: Int)

@@ -4,11 +4,10 @@ import java.io.File
 
 import com.github.tototoshi.csv._
 import com.leetcode.waverider.adapters.Adapter
-import com.leetcode.waverider.data.indicators.momentum.RSI
+import com.leetcode.waverider.data.indicators.momentum.{RSI, RSISettings}
 import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType
-import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType.AvgType
-import com.leetcode.waverider.data.indicators.trend.{MACD, MovingAverage}
-import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, BBand}
+import com.leetcode.waverider.data.indicators.trend.{MACD, MACDSettings, MovingAverage, MovingAverageSettings}
+import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRange, AvgTrueRangeSettings, BBand, BBandSettings}
 import com.leetcode.waverider.data.indicators.volume.OnBalanceVolume
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend}
 import com.leetcode.waverider.utils.TrendUtils
@@ -19,6 +18,14 @@ import scala.collection.mutable.ArrayBuffer
 object AnalysisType extends Enumeration {
   val TREND, CLOSING_CHANGE = Value
   type AnalysisType = Value
+}
+
+object IndicatorEngine {
+
+  val supportedFeatures = List(BBandSettings(21, 2), AvgTrueRangeSettings(14), MovingAverageSettings(200, AvgType.EMA),
+    MovingAverageSettings(100, AvgType.EMA), MovingAverageSettings(50, AvgType.EMA), MovingAverageSettings(25, AvgType.EMA),
+    MovingAverageSettings(15, AvgType.EMA), MovingAverageSettings(10, AvgType.EMA), MovingAverageSettings(5, AvgType.EMA),
+    MovingAverageSettings(2, AvgType.EMA), MACDSettings(12, 12, 9), RSISettings(14))
 }
 
 /**
@@ -41,8 +48,14 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
   var lastInflectionIdx:Int = 0
   var isTrendUp:Boolean = false
 
-  def analyzeNext(day: RawMarketDay): Unit = {
+  def analyzeNext(day: RawMarketDay, indicators: List()): Unit = {
     rawDays.append(day)
+
+
+
+
+
+
 
     if(analysisType == AnalysisType.TREND) {
       val rsi = RSI()
@@ -100,15 +113,12 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
     writer.close()
   }
 
-  def bollinger(): BBand = {
-    val TIME_PERIOD = 21
-    val DISTANCE_DEVIATIONS = 2
+  def bollinger(params: BBandSettings): BBand = {
+    val band = new BBand(params)
 
-    val band = new BBand
+    if(rawDays.length >= params.timePeriod) {
 
-    if (rawDays.length >= TIME_PERIOD) {
-
-      val prices = rawDays.slice(rawDays.length - TIME_PERIOD, rawDays.length).map(day => day.close).toArray
+      val prices = rawDays.slice(rawDays.length - params.timePeriod, rawDays.length).map(day => day.close).toArray
 
       val upperBand: Array[Double] = new Array[Double](1)
       val avg: Array[Double] = new Array[Double](1)
@@ -117,27 +127,25 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
       val begin = new MInteger
       val nbElement = new MInteger
 
-      val retCode = core.bbands(0, prices.length - 1, prices, TIME_PERIOD, DISTANCE_DEVIATIONS, DISTANCE_DEVIATIONS, MAType.Sma, begin, nbElement, upperBand, avg, lowerBand)
+      val retCode = core.bbands(0, prices.length - 1, prices, params.timePeriod, params.distanceDeviations,
+        params.distanceDeviations, MAType.Sma, begin, nbElement, upperBand, avg, lowerBand)
 
-      if (retCode == RetCode.Success) {
+      if(retCode == RetCode.Success) {
         band.upperBand = Some(upperBand.head)
         band.avg = Some(avg.head)
         band.lowerBand = Some(lowerBand.head)
-        band.bandDistance = DISTANCE_DEVIATIONS
       }
     }
 
     band
   }
 
-  def averageTrueRange(): AvgTrueRange = {
-    val TIME_PERIOD = 14
-
-    val atr = new AvgTrueRange
+  def averageTrueRange(params: AvgTrueRangeSettings): AvgTrueRange = {
+    val atr = new AvgTrueRange(params)
 
     //strictly greater than, as we need 15 points for a 14 day ATR: we need 1 point past the last, as TR requires it
-    if (rawDays.length > TIME_PERIOD) {
-      val days = rawDays.slice(rawDays.length - TIME_PERIOD - 1, rawDays.length)
+    if(rawDays.length > params.timePeriod) {
+      val days = rawDays.slice(rawDays.length - params.timePeriod - 1, rawDays.length)
 
       val highs = days.map(day => day.high).toArray
       val lows = days.map(day => day.low).toArray
@@ -145,9 +153,9 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
 
       val result = new Array[Double](1)
 
-      val retCode = core.atr(0, days.length - 1, highs, lows, close, TIME_PERIOD, new MInteger, new MInteger, result)
+      val retCode = core.atr(0, days.length - 1, highs, lows, close, params.timePeriod, new MInteger, new MInteger, result)
 
-      if (retCode == RetCode.Success) {
+      if(retCode == RetCode.Success) {
         atr.value = Some(result.head)
       }
     }
@@ -155,14 +163,11 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
     atr
   }
 
-  def movingAverage(timePeriod: Int, avgType: AvgType): MovingAverage = {
+  def movingAverage(params: MovingAverageSettings): MovingAverage = {
+    val ma = new MovingAverage(params)
 
-    val ma = new MovingAverage
-    ma.avgType = avgType
-    ma.timePeriod = timePeriod
-
-    if (rawDays.length >= timePeriod) {
-      val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
+    if(rawDays.length >= params.timePeriod) {
+      val days = rawDays.slice(rawDays.length - params.timePeriod, rawDays.length)
 
       val closingPrices = days.map(day => day.close).toArray
 
@@ -170,10 +175,10 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
 
       var retCode:RetCode = null
 
-      if(avgType == AvgType.EMA) {
-        retCode = core.ema(0, closingPrices.length - 1, closingPrices, timePeriod, new MInteger, new MInteger, avg)
+      if(params.avgType == AvgType.EMA) {
+        retCode = core.ema(0, closingPrices.length - 1, closingPrices, params.timePeriod, new MInteger, new MInteger, avg)
       } else {
-        retCode = core.sma(0, closingPrices.length - 1, closingPrices, timePeriod, new MInteger, new MInteger, avg)
+        retCode = core.sma(0, closingPrices.length - 1, closingPrices, params.timePeriod, new MInteger, new MInteger, avg)
       }
 
       if (retCode == RetCode.Success) {
@@ -184,18 +189,13 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
     ma
   }
 
-  def macd(): MACD = {
+  def macd(params: MACDSettings): MACD = {
+    val totalPeriods = params.slowTimePeriod + params.signalPeriod - 1
 
-    val SLOW_TIME_PERIOD = 26
-    val FAST_TIME_PERIOD = 12
-    val SIGNAL_PERIOD = 9
+    val macdObj = new MACD(params)
 
-    val TOTAL_PERIODS = SLOW_TIME_PERIOD + SIGNAL_PERIOD - 1
-
-    val macdObj = new MACD
-
-    if (rawDays.length >= TOTAL_PERIODS) {
-      val days = rawDays.slice(rawDays.length - TOTAL_PERIODS, rawDays.length)
+    if(rawDays.length >= totalPeriods) {
+      val days = rawDays.slice(rawDays.length - totalPeriods, rawDays.length)
 
       val close = days.map(day => day.close).toArray
 
@@ -203,13 +203,9 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
       val macdSignal = new Array[Double](1)
       val macdHist = new Array[Double](1)
 
-      val retCode = core.macd(0, close.length - 1, close, FAST_TIME_PERIOD, SLOW_TIME_PERIOD, SIGNAL_PERIOD, new MInteger, new MInteger, macd, macdSignal, macdHist)
+      val retCode = core.macd(0, close.length - 1, close, params.fastTimePeriod, params.slowTimePeriod, params.signalPeriod, new MInteger, new MInteger, macd, macdSignal, macdHist)
 
-      if (retCode == RetCode.Success) {
-        macdObj.fastPeriod = FAST_TIME_PERIOD
-        macdObj.slowPeriod = SLOW_TIME_PERIOD
-        macdObj.signalPeriod = SIGNAL_PERIOD
-
+      if(retCode == RetCode.Success) {
         macdObj.macd = Some(macd.head)
         macdObj.macdSignal = Some(macdSignal.head)
         macdObj.macdHist = Some(macdHist.head)
@@ -219,25 +215,20 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
     macdObj
   }
 
-  def RSI(): RSI = {
-
-    val TIME_PERIOD = 14
-
-    val rsi = new RSI
+  def RSI(params: RSISettings): RSI = {
+    val rsi = new RSI(params)
 
     //must include 1 extra day, as first element in array needs a prior element
-    if (rawDays.length > TIME_PERIOD) {
-      val days = rawDays.slice(rawDays.length - TIME_PERIOD - 1, rawDays.length)
+    if(rawDays.length > params.timePeriod) {
+      val days = rawDays.slice(rawDays.length - params.timePeriod - 1, rawDays.length)
 
       val closingPrices = days.map(day => day.close).toArray
 
       val outRSI = new Array[Double](1)
 
-      val retCode = core.rsi(0, closingPrices.length - 1, closingPrices, TIME_PERIOD, new MInteger, new MInteger, outRSI)
+      val retCode = core.rsi(0, closingPrices.length - 1, closingPrices, params.timePeriod, new MInteger, new MInteger, outRSI)
 
       if (retCode == RetCode.Success) {
-
-        rsi.timePeriod = TIME_PERIOD
         rsi.value = Some(outRSI.head)
       }
     }
@@ -246,7 +237,6 @@ class IndicatorEngine(val market: Adapter, val analysisType: AnalysisType.Analys
   }
 
   def OBV(): OnBalanceVolume = {
-
     val todayOBV = new OnBalanceVolume
 
     if(rawDays.length > 1 && analyzedMarketDays.nonEmpty) {
