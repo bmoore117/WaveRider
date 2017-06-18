@@ -5,11 +5,11 @@ import java.io.File
 import com.github.tototoshi.csv._
 import com.leetcode.waverider.adapters.Adapter
 import com.leetcode.waverider.data.indicators.IndicatorSettings
-import com.leetcode.waverider.data.indicators.momentum.RSISettings
-import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType
-import com.leetcode.waverider.data.indicators.trend.{MACDSettings, MovingAverageSettings}
-import com.leetcode.waverider.data.indicators.volatility.{AvgTrueRangeSettings, BBandSettings}
-import com.leetcode.waverider.data.indicators.volume.OnBalanceVolume
+import com.leetcode.waverider.data.indicators.generic.signals.{MACDSettings, RSISettings}
+import com.leetcode.waverider.data.indicators.generic.trend.MovingAverage.AvgType
+import com.leetcode.waverider.data.indicators.generic.trend.MovingAverageSettings
+import com.leetcode.waverider.data.indicators.typed.volatility.ATRSettings
+import com.leetcode.waverider.data.indicators.generic.volatility.BBandSettings
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend}
 import com.leetcode.waverider.utils.TrendUtils
 import com.tictactec.ta.lib.Core
@@ -23,10 +23,10 @@ object AnalysisType extends Enumeration {
 
 object IndicatorEngine {
 
-  val supportedFeatures = List(BBandSettings(21, 2), AvgTrueRangeSettings(14), MovingAverageSettings(200, AvgType.EMA),
-    MovingAverageSettings(100, AvgType.EMA), MovingAverageSettings(50, AvgType.EMA), MovingAverageSettings(25, AvgType.EMA),
-    MovingAverageSettings(15, AvgType.EMA), MovingAverageSettings(10, AvgType.EMA), MovingAverageSettings(5, AvgType.EMA),
-    MovingAverageSettings(2, AvgType.EMA), MACDSettings(12, 12, 9), RSISettings(14))
+  val supportedFeatures = List(BBandSettings(21, 2, "close"), ATRSettings(14), MovingAverageSettings(200, AvgType.EMA, "close"),
+    MovingAverageSettings(100, AvgType.EMA, "close"), MovingAverageSettings(50, AvgType.EMA, "close"), MovingAverageSettings(25, AvgType.EMA, "close"),
+    MovingAverageSettings(15, AvgType.EMA, "close"), MovingAverageSettings(10, AvgType.EMA, "close"), MovingAverageSettings(5, AvgType.EMA, "close"),
+    MovingAverageSettings(2, AvgType.EMA, "close"), MACDSettings(12, 12, 9, "close"), RSISettings(14, "close"))
 }
 
 /**

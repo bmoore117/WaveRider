@@ -1,4 +1,4 @@
-package com.leetcode.waverider.data.indicators.volatility
+package com.leetcode.waverider.data.indicators.generic.volatility
 
 import com.leetcode.waverider.data.indicators.IndicatorSettings
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
@@ -26,13 +26,14 @@ class BBand(settings: BBandSettings) extends Writable {
   }
 }
 
-case class BBandSettings(timePeriod: Int, distanceDeviations: Int) extends IndicatorSettings {
+case class BBandSettings(timePeriod: Int, distanceDeviations: Int, property: String) extends IndicatorSettings {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedMarketDays: ListBuffer[AnalyzedMarketDay]): BBand = {
     val band = new BBand(this)
 
     if(rawDays.length >= timePeriod) {
-
-      val prices = rawDays.slice(rawDays.length - timePeriod, rawDays.length).map(day => day.close).toArray
+      val days = rawDays.slice(rawDays.length - timePeriod - 1, rawDays.length)
+      val field = days.head.getClass.getDeclaredField(property)
+      val in = days.map(day => field.getDouble(day)).toArray
 
       val upperBand: Array[Double] = new Array[Double](1)
       val avg: Array[Double] = new Array[Double](1)
@@ -41,7 +42,7 @@ case class BBandSettings(timePeriod: Int, distanceDeviations: Int) extends Indic
       val begin = new MInteger
       val nbElement = new MInteger
 
-      val retCode = core.bbands(0, prices.length - 1, prices, timePeriod, distanceDeviations,
+      val retCode = core.bbands(0, in.length - 1, in, timePeriod, distanceDeviations,
         distanceDeviations, MAType.Sma, begin, nbElement, upperBand, avg, lowerBand)
 
       if(retCode == RetCode.Success) {

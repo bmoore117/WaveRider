@@ -1,7 +1,7 @@
-package com.leetcode.waverider.data.indicators.trend
+package com.leetcode.waverider.data.indicators.generic.signals
 
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
 import com.tictactec.ta.lib.{Core, MInteger, RetCode}
 
 import scala.collection.mutable.ListBuffer
@@ -25,7 +25,7 @@ class MACD(val settings: MACDSettings) extends Writable {
   }
 }
 
-case class MACDSettings(slowTimePeriod: Int, fastTimePeriod:Int, signalPeriod: Int) extends IndicatorSettings {
+case class MACDSettings(slowTimePeriod: Int, fastTimePeriod:Int, signalPeriod: Int, property: String) extends IndicatorSettings {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedMarketDays: ListBuffer[AnalyzedMarketDay]): Writable = {
     val totalPeriods = slowTimePeriod + signalPeriod - 1
 
@@ -33,14 +33,14 @@ case class MACDSettings(slowTimePeriod: Int, fastTimePeriod:Int, signalPeriod: I
 
     if(rawDays.length >= totalPeriods) {
       val days = rawDays.slice(rawDays.length - totalPeriods, rawDays.length)
-
-      val close = days.map(day => day.close).toArray
+      val field = days.head.getClass.getDeclaredField(property)
+      val in = days.map(day => field.getDouble(day)).toArray
 
       val macd = new Array[Double](1)
       val macdSignal = new Array[Double](1)
       val macdHist = new Array[Double](1)
 
-      val retCode = core.macd(0, close.length - 1, close, fastTimePeriod, slowTimePeriod, signalPeriod, new MInteger, new MInteger, macd, macdSignal, macdHist)
+      val retCode = core.macd(0, in.length - 1, in, fastTimePeriod, slowTimePeriod, signalPeriod, new MInteger, new MInteger, macd, macdSignal, macdHist)
 
       if(retCode == RetCode.Success) {
         macdObj.macd = Some(macd.head)

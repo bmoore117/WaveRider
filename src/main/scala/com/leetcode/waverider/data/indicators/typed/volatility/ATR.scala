@@ -1,7 +1,7 @@
-package com.leetcode.waverider.data.indicators.volatility
+package com.leetcode.waverider.data.indicators.typed.volatility
 
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
 import com.tictactec.ta.lib.{Core, MInteger, RetCode}
 
 import scala.collection.mutable.ListBuffer
@@ -9,7 +9,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Ben on 4/17/2017.
   */
-class AvgTrueRange(val settings: AvgTrueRangeSettings) extends Writable{
+class AvgTrueRange(val settings: ATRSettings) extends Writable{
   var value:Option[Double] = None
 
   override def headers: List[String] = {
@@ -21,7 +21,7 @@ class AvgTrueRange(val settings: AvgTrueRangeSettings) extends Writable{
   }
 }
 
-case class AvgTrueRangeSettings(timePeriod: Int) extends IndicatorSettings {
+case class ATRSettings(timePeriod: Int) extends IndicatorSettings {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedMarketDays: ListBuffer[AnalyzedMarketDay]): Writable = {
     val atr = new AvgTrueRange(this)
 

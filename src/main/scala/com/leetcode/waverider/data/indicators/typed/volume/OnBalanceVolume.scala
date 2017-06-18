@@ -1,4 +1,4 @@
-package com.leetcode.waverider.data.indicators.volume
+package com.leetcode.waverider.data.indicators.typed.volume
 
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorSettings

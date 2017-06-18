@@ -1,9 +1,9 @@
-package com.leetcode.waverider.data.indicators.trend
+package com.leetcode.waverider.data.indicators.generic.trend
 
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorSettings
-import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType
-import com.leetcode.waverider.data.indicators.trend.MovingAverage.AvgType.AvgType
+import com.leetcode.waverider.data.indicators.generic.trend.MovingAverage.AvgType
+import com.leetcode.waverider.data.indicators.generic.trend.MovingAverage.AvgType.AvgType
 import com.tictactec.ta.lib.{Core, MInteger, RetCode}
 
 import scala.collection.mutable.ListBuffer
@@ -33,27 +33,26 @@ object MovingAverage {
   }
 }
 
-case class MovingAverageSettings(timePeriod: Int, avgType: AvgType) extends IndicatorSettings {
+case class MovingAverageSettings(timePeriod: Int, avgType: AvgType, property: String) extends IndicatorSettings {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedMarketDays: ListBuffer[AnalyzedMarketDay]): Writable = {
     val ma = new MovingAverage(this)
 
     if(rawDays.length >= timePeriod) {
       val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
-
-      val closingPrices = days.map(day => day.close).toArray
-
-      val avg = new Array[Double](1)
+      val field = days.head.getClass.getDeclaredField(property)
+      val in = days.map(day => field.getDouble(day)).toArray
+      val result = new Array[Double](1)
 
       var retCode:RetCode = null
 
       if(avgType == AvgType.EMA) {
-        retCode = core.ema(0, closingPrices.length - 1, closingPrices, timePeriod, new MInteger, new MInteger, avg)
+        retCode = core.ema(0, in.length - 1, in, timePeriod, new MInteger, new MInteger, result)
       } else {
-        retCode = core.sma(0, closingPrices.length - 1, closingPrices, timePeriod, new MInteger, new MInteger, avg)
+        retCode = core.sma(0, in.length - 1, in, timePeriod, new MInteger, new MInteger, result)
       }
 
       if (retCode == RetCode.Success) {
-        ma.value = Some(avg.head)
+        ma.value = Some(result.head)
       }
     }
 
