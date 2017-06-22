@@ -94,6 +94,8 @@ case class TrendStatsBuilder() extends IndicatorSettings {
     stats.durationPercentile = Some(durationPercentile)
     stats.direction = Some(direction)
     stats.acceleration = Some(accelerationType)
+
+    stats
   }
 }
 

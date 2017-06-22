@@ -26,9 +26,9 @@ object Main {
       engine.writeAnalysis()
 
     } else if (args.length == 2) {
-      val engine = new MLEngine(args.head, args.last, IndicatorEngine.supportedFeatures.)
+      //val engine = new MLEngine(args.head, args.last, IndicatorEngine.supportedFeatures.)
 
-      engine.train()
+      //engine.train()
     }
 
     else {

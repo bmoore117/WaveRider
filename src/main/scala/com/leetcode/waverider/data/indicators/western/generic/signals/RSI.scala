@@ -30,8 +30,6 @@ case class RSISettings(timePeriod: Int, property: String) extends IndicatorSetti
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val rsi = new RSI(this)
 
-    core.
-
     //must include 1 extra day, as first element in array needs a prior element
     if(rawDays.length > timePeriod) {
       val days = rawDays.slice(rawDays.length - timePeriod - 1, rawDays.length)
