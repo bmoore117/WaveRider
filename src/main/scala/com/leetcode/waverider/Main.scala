@@ -14,19 +14,19 @@ object Main {
       val adapter = new YahooFileAdapter()
       adapter.init(args)
 
-      val engine = new IndicatorEngine(adapter)
+      val engine = new IndicatorEngine(adapter, Some(10))
 
       var day = adapter.next()
 
       while (day.isDefined) {
-        engine.analyzeNext(day.get)
+        engine.analyzeNext(day.get, IndicatorEngine.supportedFeatures)
         day = adapter.next()
       }
 
       engine.writeAnalysis()
 
     } else if (args.length == 2) {
-      val engine = new MLEngine(args.head, args.last)
+      val engine = new MLEngine(args.head, args.last, IndicatorEngine.supportedFeatures.)
 
       engine.train()
     }

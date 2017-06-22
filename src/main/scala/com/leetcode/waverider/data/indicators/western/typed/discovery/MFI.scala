@@ -1,7 +1,8 @@
-package com.leetcode.waverider.data.indicators.typed.discovery
+package com.leetcode.waverider.data.indicators.western.typed.discovery
 
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.{Core, MAType, MInteger, RetCode}
 
 import scala.collection.mutable.ListBuffer
@@ -18,7 +19,8 @@ class MFI(val settings: MFISettings) extends Writable {
 }
 
 case class MFISettings(timePeriod:Int) extends IndicatorSettings {
-  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay]): Writable = {
+  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
+                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val mfi = new MFI(this)
 
     if(rawDays.length >= timePeriod) {

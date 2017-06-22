@@ -1,7 +1,8 @@
-package com.leetcode.waverider.data.indicators.typed.volume
+package com.leetcode.waverider.data.indicators.western.typed.volume
 
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.Core
 
 import scala.collection.mutable.ListBuffer
@@ -25,17 +26,18 @@ class OnBalanceVolume extends Writable {
 }
 
 case class OnBalanceVolumeSettings() extends IndicatorSettings {
-  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedMarketDays: ListBuffer[AnalyzedMarketDay]): Writable = {
+  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
+                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val todayOBV = new OnBalanceVolume
 
-    if(rawDays.length > 1 && analyzedMarketDays.nonEmpty) {
+    if(rawDays.length > 1 && analyzedDays.nonEmpty) {
 
       val days = rawDays.slice(rawDays.length - 2, rawDays.length)
 
       val prices = days.map(day => day.close)
       val volume = days.map(day => day.volume)
 
-      val yesterdayOBV = analyzedMarketDays.last.indicators.find(indicator => indicator.isInstanceOf[OnBalanceVolume])
+      val yesterdayOBV = analyzedDays.last.indicators.find(indicator => indicator.isInstanceOf[OnBalanceVolume])
       val yesterday = yesterdayOBV.get.asInstanceOf[OnBalanceVolume]
 
       yesterday.value match {

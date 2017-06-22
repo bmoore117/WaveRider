@@ -1,7 +1,8 @@
-package com.leetcode.waverider.data.indicators.generic.rate
+package com.leetcode.waverider.data.indicators.western.generic.rate
 
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.{Core, MInteger, RetCode}
 
 import scala.collection.mutable.ListBuffer
@@ -18,9 +19,9 @@ class MOM(val settings: MOMSettings) extends Writable {
 }
 
 case class MOMSettings(timePeriod: Int, property: String) extends IndicatorSettings {
-  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay]): Writable = {
+  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
+                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val mom = new MOM(this)
-
     if(rawDays.length >= timePeriod) {
       val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
       val field = days.head.getClass.getDeclaredField(property)

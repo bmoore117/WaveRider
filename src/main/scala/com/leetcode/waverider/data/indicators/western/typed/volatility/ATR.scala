@@ -1,7 +1,8 @@
-package com.leetcode.waverider.data.indicators.typed.volatility
+package com.leetcode.waverider.data.indicators.western.typed.volatility
 
 import com.leetcode.waverider.data.indicators.IndicatorSettings
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
+import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.{Core, MInteger, RetCode}
 
 import scala.collection.mutable.ListBuffer
@@ -22,7 +23,8 @@ class AvgTrueRange(val settings: ATRSettings) extends Writable{
 }
 
 case class ATRSettings(timePeriod: Int) extends IndicatorSettings {
-  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedMarketDays: ListBuffer[AnalyzedMarketDay]): Writable = {
+  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
+                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val atr = new AvgTrueRange(this)
 
     //strictly greater than, as we need 15 points for a 14 day ATR: we need 1 point past the last, as TR requires it

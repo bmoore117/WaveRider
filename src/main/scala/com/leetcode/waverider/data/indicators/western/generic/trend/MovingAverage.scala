@@ -1,9 +1,10 @@
-package com.leetcode.waverider.data.indicators.generic.trend
+package com.leetcode.waverider.data.indicators.western.generic.trend
 
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Writable}
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorSettings
-import com.leetcode.waverider.data.indicators.generic.trend.MovingAverage.AvgType
-import com.leetcode.waverider.data.indicators.generic.trend.MovingAverage.AvgType.AvgType
+import com.leetcode.waverider.data.indicators.western.generic.trend.MovingAverage.AvgType
+import com.leetcode.waverider.data.indicators.western.generic.trend.MovingAverage.AvgType.AvgType
+import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.{Core, MInteger, RetCode}
 
 import scala.collection.mutable.ListBuffer
@@ -34,7 +35,8 @@ object MovingAverage {
 }
 
 case class MovingAverageSettings(timePeriod: Int, avgType: AvgType, property: String) extends IndicatorSettings {
-  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedMarketDays: ListBuffer[AnalyzedMarketDay]): Writable = {
+  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
+                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val ma = new MovingAverage(this)
 
     if(rawDays.length >= timePeriod) {
