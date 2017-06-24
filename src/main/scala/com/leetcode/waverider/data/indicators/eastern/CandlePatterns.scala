@@ -11,9 +11,9 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
   * Created by Ben on 6/21/2017.
   */
 class CandlePatterns extends Writable {
-  override def headers: List[String] = values.map(i => i.toString)
+  override def headers: List[String] = names
 
-  override def features: List[String] = names
+  override def features: List[String] = values.map(i => i.toString)
 
   var values:List[Int] = Nil
   var names:List[String] = Nil
@@ -47,12 +47,12 @@ case class CandlePatternsBuilder(timePeriod: Int) extends IndicatorSettings {
 
         if(m.getParameterCount == 9) {
           val result = new Array[Int](days.length)
-          m.invoke(core, 0, days.length - 1, open, high, low, close, new MInteger, new MInteger, result)
+          m.invoke(core, new Integer(0), new Integer(days.length - 1), open, high, low, close, new MInteger, new MInteger, result)
           resultList.append(result.sum)
           nameList.append(m.getName.replace("cdl", ""))
         } else if(m.getParameterCount == 10) {
           val result = new Array[Int](days.length)
-          m.invoke(core, 0, days.length - 1, open, high, low, close, Double.MinValue, new MInteger, new MInteger, result)
+          m.invoke(core, new Integer(0), new Integer(days.length - 1), open, high, low, close, new java.lang.Double(Double.MinValue), new MInteger, new MInteger, result)
           resultList.append(result.sum)
           nameList.append(m.getName.replace("cdl", ""))
         }

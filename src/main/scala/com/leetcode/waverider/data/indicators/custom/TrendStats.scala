@@ -28,7 +28,13 @@ class TrendStats extends Trend(None, None, None, None) {
 case class TrendStatsBuilder() extends IndicatorSettings {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay],
                                     last100Trends:LastNQueue[Trend], current: Trend): Writable = {
+    val stats = new TrendStats()
+
     val trends = last100Trends.toList
+
+    if(trends.isEmpty || current.duration.get == 0) {
+      return stats
+    }
 
     val sizeDistribution = new mutable.HashMap[Double, Int]()
     val durationDistribution = new mutable.HashMap[Int, Int]()
@@ -52,21 +58,22 @@ case class TrendStatsBuilder() extends IndicatorSettings {
     val sizeKeys = sizeDistribution.keySet.toList.sorted
     var sum = 0
     var i = 0
-    while (current.pctDelta.get < sizeKeys(i))  {
+    while (i < sizeKeys.length && current.pctDelta.get.abs > sizeKeys(i))  {
       sum += sizeDistribution(sizeKeys(i))
       i += 1
     }
-    val sizePercentile = sum / sizeDistribution.values.sum
+
+    val sizePercentile = sum.toDouble / sizeDistribution.values.sum.toDouble
 
     //find duration percentile
     val durationKeys = durationDistribution.keySet.toList.sorted
     sum = 0
     i = 0
-    while (current.duration.get < durationKeys(i)) {
+    while (i < durationKeys.length && current.duration.get > durationKeys(i)) {
       sum += durationDistribution(durationKeys(i))
       i += 1
     }
-    val durationPercentile = sum / durationDistribution.values.sum
+    val durationPercentile = sum.toDouble / durationDistribution.values.sum.toDouble
 
     //find basic trend direction
     val direction = if(math.signum(current.pctDelta.get) > 0) {
@@ -88,7 +95,6 @@ case class TrendStatsBuilder() extends IndicatorSettings {
       AccelerationType.DECREASING
     }
 
-    val stats = new TrendStats()
 
     stats.sizePercentile = Some(sizePercentile)
     stats.durationPercentile = Some(durationPercentile)

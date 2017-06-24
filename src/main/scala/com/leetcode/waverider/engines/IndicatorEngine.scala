@@ -5,6 +5,8 @@ import java.io.File
 import com.github.tototoshi.csv._
 import com.leetcode.waverider.adapters.Adapter
 import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.indicators.custom.TrendStatsBuilder
+import com.leetcode.waverider.data.indicators.eastern.CandlePatternsBuilder
 import com.leetcode.waverider.data.indicators.western.generic.rate.{MOMSettings, ROCRSettings}
 import com.leetcode.waverider.data.indicators.western.generic.signals.{MACDSettings, RSISettings}
 import com.leetcode.waverider.data.indicators.western.generic.trend.MovingAverage.AvgType
@@ -20,11 +22,13 @@ import scala.collection.mutable.ListBuffer
 
 object IndicatorEngine {
 
-  val supportedFeatures = List(BBandSettings(21, 2, "close"), ATRSettings(14), MovingAverageSettings(200, AvgType.EMA, "close"),
+  /*
+  * BBandSettings(21, 2, "close"), ATRSettings(14), MovingAverageSettings(200, AvgType.EMA, "close"),
     MovingAverageSettings(100, AvgType.EMA, "close"), MovingAverageSettings(50, AvgType.EMA, "close"), MovingAverageSettings(25, AvgType.EMA, "close"),
     MovingAverageSettings(15, AvgType.EMA, "close"), MovingAverageSettings(10, AvgType.EMA, "close"), MovingAverageSettings(5, AvgType.EMA, "close"),
     MovingAverageSettings(2, AvgType.EMA, "close"), MACDSettings(12, 12, 9, "close"), RSISettings(14, "close"), MOMSettings(14, "close"), MOMSettings(14, "volume"),
-    ROCRSettings(14, "close"), MFISettings(14))
+    ROCRSettings(14, "close"), MFISettings(14), */
+  val supportedFeatures = List(CandlePatternsBuilder(10), TrendStatsBuilder())
 }
 
 /**
@@ -39,7 +43,7 @@ object IndicatorEngine {
   */
 class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
   val rawDays = new ListBuffer[RawMarketDay]()
-  val analyzedMarketDays = new ListBuffer[AnalyzedMarketDay]()
+  var analyzedMarketDays = new ListBuffer[AnalyzedMarketDay]()
   val core = new Core
   val trendQueue = new LastNQueue[Trend](100)
 
@@ -50,6 +54,8 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
 
   def analyzeNext(day: RawMarketDay, indicators: List[IndicatorSettings]): Unit = {
     rawDays.append(day)
+
+    trend()
 
     //trend here supplies the instantaneous trend
     val results = indicators.map(indicator =>
@@ -63,6 +69,7 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
 
     //need to further break these down into a categorical: Trend up or down, for classification
     val labels = (if(trendWindowToPredict.isDefined) {
+      analyzedMarketDays = analyzedMarketDays.dropRight(trendWindowToPredict.get)
       TrendUtils.buildTrendData(prices, trendWindowToPredict.get) //fixed-window trend
     } else {
       val temp = TrendUtils.buildTrendData(prices) //instantaneous trend, i.e. hard mode prediction
@@ -97,7 +104,7 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
       val pctChange = (rawDays.head.close - rawDays.head.open)/rawDays.head.open
       current = new Trend(Some(0), Some(0), Some(pctChange), Some(1))
     } else {
-      val pctChange = Some((rawDays.last.close - startingClose)/startingClose)
+      val pctChange = Some(((rawDays.last.close - startingClose)/startingClose).abs)
       val duration = Some(rawDays.length - lastInflectionIdx)
 
       if(isTrendUp) {

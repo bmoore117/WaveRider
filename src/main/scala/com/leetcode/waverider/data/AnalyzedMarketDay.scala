@@ -12,7 +12,7 @@ class AnalyzedMarketDay(val day: RawMarketDay, val indicators: List[Writable]) e
   override def headers: List[String] = {
     val headers = new ListBuffer[String]()
 
-    indicators.foreach(indicator => headers ++ indicator.headers)
+    indicators.foreach(indicator => headers ++= indicator.headers)
 
     headers.toList
   }
@@ -20,7 +20,7 @@ class AnalyzedMarketDay(val day: RawMarketDay, val indicators: List[Writable]) e
   override def features: List[String] = {
     val features = new ListBuffer[String]()
 
-    indicators.foreach(indicator => features ++ indicator.features)
+    indicators.foreach(indicator => features ++= indicator.features)
 
     features.toList
   }
