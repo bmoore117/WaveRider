@@ -33,9 +33,9 @@ case class BBandSettings(timePeriod: Int, distanceDeviations: Int, property: Str
     val band = new BBand(this)
 
     if(rawDays.length >= timePeriod) {
-      val days = rawDays.slice(rawDays.length - timePeriod - 1, rawDays.length)
-      val field = days.head.getClass.getDeclaredField(property)
-      val in = days.map(day => field.getDouble(day)).toArray
+      val days = rawDays.takeRight(timePeriod)
+      val method = days.head.getClass.getDeclaredMethod(property)
+      val in = days.map(day => method.invoke(day).asInstanceOf[Number].doubleValue()).toArray
 
       val upperBand: Array[Double] = new Array[Double](1)
       val avg: Array[Double] = new Array[Double](1)

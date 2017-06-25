@@ -32,7 +32,7 @@ case class OnBalanceVolumeSettings() extends IndicatorSettings {
 
     if(rawDays.length > 1 && analyzedDays.nonEmpty) {
 
-      val days = rawDays.slice(rawDays.length - 2, rawDays.length)
+      val days = rawDays.takeRight(2)
 
       val prices = days.map(day => day.close)
       val volume = days.map(day => day.volume)

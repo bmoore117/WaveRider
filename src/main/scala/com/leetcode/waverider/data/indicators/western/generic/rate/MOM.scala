@@ -23,9 +23,9 @@ case class MOMSettings(timePeriod: Int, property: String) extends IndicatorSetti
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val mom = new MOM(this)
     if(rawDays.length >= timePeriod) {
-      val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
-      val field = days.head.getClass.getDeclaredField(property)
-      val in = days.map(day => field.getDouble(day)).toArray
+      val days = rawDays.takeRight(timePeriod)
+      val method = days.head.getClass.getDeclaredMethod(property)
+      val in = days.map(day => method.invoke(day).asInstanceOf[Number].doubleValue()).toArray
       val result = new Array[Double](1)
 
       val retCode = core.mom(0, days.length - 1, in, timePeriod, new MInteger, new MInteger, result)

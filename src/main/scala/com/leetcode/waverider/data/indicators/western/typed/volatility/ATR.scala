@@ -29,7 +29,7 @@ case class ATRSettings(timePeriod: Int) extends IndicatorSettings {
 
     //strictly greater than, as we need 15 points for a 14 day ATR: we need 1 point past the last, as TR requires it
     if(rawDays.length > timePeriod) {
-      val days = rawDays.slice(rawDays.length - timePeriod - 1, rawDays.length)
+      val days = rawDays.takeRight(timePeriod)
 
       val highs = days.map(day => day.high).toArray
       val lows = days.map(day => day.low).toArray

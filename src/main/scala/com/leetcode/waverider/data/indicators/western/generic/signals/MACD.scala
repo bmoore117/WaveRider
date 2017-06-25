@@ -34,9 +34,9 @@ case class MACDSettings(slowTimePeriod: Int, fastTimePeriod:Int, signalPeriod: I
     val macdObj = new MACD(this)
 
     if(rawDays.length >= totalPeriods) {
-      val days = rawDays.slice(rawDays.length - totalPeriods, rawDays.length)
-      val field = days.head.getClass.getDeclaredField(property)
-      val in = days.map(day => field.getDouble(day)).toArray
+      val days = rawDays.takeRight(totalPeriods)
+      val method = days.head.getClass.getDeclaredMethod(property)
+      val in = days.map(day => method.invoke(day).asInstanceOf[Number].doubleValue()).toArray
 
       val macd = new Array[Double](1)
       val macdSignal = new Array[Double](1)

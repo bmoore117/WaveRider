@@ -5,7 +5,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Ben on 4/19/2017.
   */
-class AnalyzedMarketDay(val day: RawMarketDay, val indicators: List[Writable]) extends RawMarketDay with Writable {
+class AnalyzedMarketDay(val day: RawMarketDay, val indicators: List[Writable]) extends Writable {
 
   override def toString = s"AnalyzedMarketDay($day, $indicators)"
 

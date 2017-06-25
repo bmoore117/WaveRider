@@ -25,9 +25,9 @@ case class ROCRSettings(timePeriod: Int, property: String) extends IndicatorSett
     val rocr = new ROCR(this)
 
     if(rawDays.length >= timePeriod) {
-      val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
-      val field = days.head.getClass.getDeclaredField(property)
-      val in = days.map(day => field.getDouble(day)).toArray
+      val days = rawDays.takeRight(timePeriod)
+      val method = days.head.getClass.getDeclaredMethod(property)
+      val in = days.map(day => method.invoke(day).asInstanceOf[Number].doubleValue()).toArray
       val result = new Array[Double](1)
 
       val retCode = core.mom(0, days.length - 1, in, timePeriod, new MInteger, new MInteger, result)

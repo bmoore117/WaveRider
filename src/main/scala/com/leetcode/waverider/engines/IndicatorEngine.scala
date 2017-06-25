@@ -22,13 +22,11 @@ import scala.collection.mutable.ListBuffer
 
 object IndicatorEngine {
 
-  /*
-  * BBandSettings(21, 2, "close"), ATRSettings(14), MovingAverageSettings(200, AvgType.EMA, "close"),
+  val supportedFeatures = List(BBandSettings(21, 2, "close"), ATRSettings(14), MovingAverageSettings(200, AvgType.EMA, "close"),
     MovingAverageSettings(100, AvgType.EMA, "close"), MovingAverageSettings(50, AvgType.EMA, "close"), MovingAverageSettings(25, AvgType.EMA, "close"),
     MovingAverageSettings(15, AvgType.EMA, "close"), MovingAverageSettings(10, AvgType.EMA, "close"), MovingAverageSettings(5, AvgType.EMA, "close"),
     MovingAverageSettings(2, AvgType.EMA, "close"), MACDSettings(12, 12, 9, "close"), RSISettings(14, "close"), MOMSettings(14, "close"), MOMSettings(14, "volume"),
-    ROCRSettings(14, "close"), MFISettings(14), */
-  val supportedFeatures = List(CandlePatternsBuilder(10), TrendStatsBuilder())
+    ROCRSettings(14, "close"), MFISettings(14), CandlePatternsBuilder(10), TrendStatsBuilder())
 }
 
 /**

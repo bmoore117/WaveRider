@@ -40,9 +40,9 @@ case class MovingAverageSettings(timePeriod: Int, avgType: AvgType, property: St
     val ma = new MovingAverage(this)
 
     if(rawDays.length >= timePeriod) {
-      val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
-      val field = days.head.getClass.getDeclaredField(property)
-      val in = days.map(day => field.getDouble(day)).toArray
+      val days = rawDays.takeRight(timePeriod)
+      val method = days.head.getClass.getDeclaredMethod(property)
+      val in = days.map(day => method.invoke(day).asInstanceOf[Number].doubleValue()).toArray
       val result = new Array[Double](1)
 
       var retCode:RetCode = null

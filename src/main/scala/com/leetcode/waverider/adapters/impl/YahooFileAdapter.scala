@@ -45,19 +45,8 @@ class YahooFileAdapter extends Adapter {
   override def handleOutput(analyzedDay: AnalyzedMarketDay): Unit = {}
 
   def initTypes(day: Seq[String]): RawMarketDay = {
-
     val format = new SimpleDateFormat("yyyy-MM-DD")
-    val mktDay = new RawMarketDay
-
-    mktDay.date = format.parse(day.head)
-    mktDay.open = day(1).toDouble
-    mktDay.high = day(2).toDouble
-    mktDay.low = day(3).toDouble
-    mktDay.close = day(4).toDouble
-    mktDay.volume = day(5).toInt
-    mktDay.adjustedClose = day(6).toDouble
-
-    mktDay
+    new RawMarketDay(format.parse(day.head), day(1).toDouble, day(2).toDouble, day(3).toDouble, day(4).toDouble, day(5).toInt, day(6).toDouble)
   }
 
   override def dispose(): Unit = {}

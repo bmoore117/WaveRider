@@ -24,7 +24,7 @@ case class MFISettings(timePeriod:Int) extends IndicatorSettings {
     val mfi = new MFI(this)
 
     if(rawDays.length >= timePeriod) {
-      val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
+      val days = rawDays.takeRight(timePeriod)
 
       val high = new Array[Double](days.length)
       val low = new Array[Double](days.length)

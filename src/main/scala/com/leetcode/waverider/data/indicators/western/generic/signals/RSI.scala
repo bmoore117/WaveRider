@@ -32,9 +32,9 @@ case class RSISettings(timePeriod: Int, property: String) extends IndicatorSetti
 
     //must include 1 extra day, as first element in array needs a prior element
     if(rawDays.length > timePeriod) {
-      val days = rawDays.slice(rawDays.length - timePeriod - 1, rawDays.length)
-      val field = days.head.getClass.getDeclaredField(property)
-      val in = days.map(day => field.getDouble(day)).toArray
+      val days = rawDays.takeRight(timePeriod)
+      val method = days.head.getClass.getDeclaredMethod(property)
+      val in = days.map(day => method.invoke(day).asInstanceOf[Number].doubleValue()).toArray
       val result = new Array[Double](1)
 
       val retCode = core.rsi(0, in.length - 1, in, timePeriod, new MInteger, new MInteger, result)
