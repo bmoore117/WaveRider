@@ -76,9 +76,9 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
       TrendUtils.findEndOfTrendChanges(prices, temp)
     }).map(trend => {
       val direction = if(math.signum(trend.pctDelta.get) > 0) {
-        "UP"
+        "YES"
       } else {
-        "DOWN"
+        "NO"
       }
       new Label(List("CLASS"), List(direction))
     })
@@ -101,26 +101,24 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
     */
   def trend(): Unit = {
     if(rawDays.length == 1) {
-
       lastInflectionIdx = 0
       startingClose = rawDays.head.close
-
     } else if(rawDays.length == 2) {
-
       isTrendUp = rawDays.last.close > startingClose
-
     } else {
-      val pctChange = ((rawDays.last.close - startingClose)/startingClose).abs
+      val pctChange = (rawDays.last.close - startingClose)/startingClose
       val duration = (rawDays.length - 1) - lastInflectionIdx
 
       if(isTrendUp) {
         if(rawDays.last.close < rawDays(rawDays.length - 2).close) { // if we break trend
+          isTrendUp = false
           splitTrend(pctChange, duration)
         } else {
           current = new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1), Some(pctChange), Some(duration))
         }
       } else if(!isTrendUp) {
         if(rawDays.last.close > rawDays(rawDays.length - 2).close) { //same
+          isTrendUp = true
           splitTrend(pctChange, duration)
         } else {
           current = new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1), Some(pctChange), Some(duration))
@@ -134,7 +132,6 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
 
     lastInflectionIdx = rawDays.length - 1
     startingClose = rawDays.last.close
-    isTrendUp = false
 
     current = new Trend(Some(rawDays.length - 1), Some(rawDays.length - 1), Some(0), Some(0))
   }

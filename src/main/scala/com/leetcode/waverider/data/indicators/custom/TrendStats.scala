@@ -32,7 +32,7 @@ case class TrendStatsBuilder() extends IndicatorSettings {
 
     val trends = last100Trends.toList
 
-    if(trends.length < 4 || current.duration.get == 0) {
+    if(trends.isEmpty || current.duration.get == 0 || rawDays.length < 4) {
       return stats
     }
 
@@ -41,10 +41,10 @@ case class TrendStatsBuilder() extends IndicatorSettings {
 
     //build distributions
     trends.foreach(trend => {
-      if(!sizeDistribution.contains(trend.pctDelta.get)) {
-        sizeDistribution.put(trend.pctDelta.get, 1)
+      if(!sizeDistribution.contains(trend.pctDelta.get.abs)) {
+        sizeDistribution.put(trend.pctDelta.get.abs, 1)
       } else {
-        sizeDistribution.update(trend.pctDelta.get, sizeDistribution(trend.pctDelta.get) + 1)
+        sizeDistribution.update(trend.pctDelta.get.abs, sizeDistribution(trend.pctDelta.get.abs) + 1)
       }
 
       if(!durationDistribution.contains(trend.duration.get)) {
