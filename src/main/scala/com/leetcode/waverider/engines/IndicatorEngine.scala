@@ -45,12 +45,11 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
   val rawDays = new ListBuffer[RawMarketDay]()
   var analyzedMarketDays = new ListBuffer[AnalyzedMarketDay]()
   val core = new Core
-  val trendQueue = new LastNQueue[Trend](100)
 
+  val trendQueue = new LastNQueue[Trend](100)
   var lastInflectionIdx:Int = 0
-  var startingClose:Double = 0
   var isTrendUp:Boolean = false
-  var current: Trend = null
+  var current: Trend = _
 
   def analyzeNext(day: RawMarketDay, indicators: List[IndicatorSettings]): Unit = {
     rawDays.append(day)
@@ -102,11 +101,10 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
   def trend(): Unit = {
     if(rawDays.length == 1) {
       lastInflectionIdx = 0
-      startingClose = rawDays.head.close
     } else if(rawDays.length == 2) {
-      isTrendUp = rawDays.last.close > startingClose
+      isTrendUp = rawDays.last.close > rawDays(lastInflectionIdx).close
     } else {
-      val pctChange = (rawDays.last.close - startingClose)/startingClose
+      val pctChange = (rawDays.last.close - rawDays(lastInflectionIdx).close)/rawDays(lastInflectionIdx).close
       val duration = (rawDays.length - 1) - lastInflectionIdx
 
       if(isTrendUp) {
@@ -126,37 +124,13 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
       }
     }
   }
+
   private def splitTrend(pctChange: Double, duration: Int): Unit = {
     trendQueue.enqueue(new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1),
       Some(pctChange), Some(duration)))
 
     lastInflectionIdx = rawDays.length - 1
-    startingClose = rawDays.last.close
 
     current = new Trend(Some(rawDays.length - 1), Some(rawDays.length - 1), Some(0), Some(0))
-  }
-
-  def reversal(): Unit = {
-    /*if(rawDays.length == 1) {
-      new Trend(None, None, None, None)
-    } else {
-
-      if(isTrendUp) {
-        if(rawDays.last.close < rawDays(rawDays.length - 2).close) {
-          lastInflectionIdx = rawDays.length - 2
-          isTrendUp = false
-        }
-      } else if(!isTrendUp) {
-        if(rawDays.last.close > rawDays(rawDays.length - 2).close) {
-          lastInflectionIdx = rawDays.length - 2
-          isTrendUp = true
-        }
-      }
-
-      val valueChg = (rawDays.last.close - rawDays(lastInflectionIdx).close) / rawDays(lastInflectionIdx).close
-      val duration = (rawDays.length - 1) - lastInflectionIdx
-
-      new Trend(None, None, Some(valueChg), Some(duration))
-    }*/
   }
 }
