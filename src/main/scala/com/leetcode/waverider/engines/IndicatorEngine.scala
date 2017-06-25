@@ -4,16 +4,16 @@ import java.io.File
 
 import com.github.tototoshi.csv._
 import com.leetcode.waverider.adapters.Adapter
-import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.data.indicators.custom.TrendStatsBuilder
 import com.leetcode.waverider.data.indicators.eastern.CandlePatternsBuilder
-import com.leetcode.waverider.data.indicators.western.generic.rate.{MOMSettings, ROCRSettings}
-import com.leetcode.waverider.data.indicators.western.generic.signals.{MACDSettings, RSISettings}
+import com.leetcode.waverider.data.indicators.western.generic.rate.{MOMBuilder, ROCRBuilder}
+import com.leetcode.waverider.data.indicators.western.generic.signals.{MACDBuilder, RSIBuilder}
+import com.leetcode.waverider.data.indicators.western.generic.trend.MABuilder
 import com.leetcode.waverider.data.indicators.western.generic.trend.MovingAverage.AvgType
-import com.leetcode.waverider.data.indicators.western.generic.trend.MovingAverageSettings
-import com.leetcode.waverider.data.indicators.western.typed.volatility.ATRSettings
-import com.leetcode.waverider.data.indicators.western.generic.volatility.BBandSettings
-import com.leetcode.waverider.data.indicators.western.typed.discovery.MFISettings
+import com.leetcode.waverider.data.indicators.western.generic.volatility.BBandBuilder
+import com.leetcode.waverider.data.indicators.western.typed.discovery.MFIBuilder
+import com.leetcode.waverider.data.indicators.western.typed.volatility.ATRBuilder
 import com.leetcode.waverider.data.{AnalyzedMarketDay, Label, RawMarketDay, Trend}
 import com.leetcode.waverider.utils.{LastNQueue, TrendUtils}
 import com.tictactec.ta.lib.Core
@@ -22,11 +22,28 @@ import scala.collection.mutable.ListBuffer
 
 object IndicatorEngine {
 
-  val supportedFeatures = List(BBandSettings(21, 2, "close"), ATRSettings(14), MovingAverageSettings(200, AvgType.EMA, "close"),
-    MovingAverageSettings(100, AvgType.EMA, "close"), MovingAverageSettings(50, AvgType.EMA, "close"), MovingAverageSettings(25, AvgType.EMA, "close"),
-    MovingAverageSettings(15, AvgType.EMA, "close"), MovingAverageSettings(10, AvgType.EMA, "close"), MovingAverageSettings(5, AvgType.EMA, "close"),
-    MovingAverageSettings(2, AvgType.EMA, "close"), MACDSettings(12, 12, 9, "close"), RSISettings(14, "close"), MOMSettings(14, "close"), MOMSettings(14, "volume"),
-    ROCRSettings(14, "close"), MFISettings(14), CandlePatternsBuilder(10), TrendStatsBuilder())
+  val supportedFeatures = Set(ATRBuilder(14),
+    BBandBuilder(21, 2, "close"),
+    CandlePatternsBuilder(10),
+    MACDBuilder(12, 12, 9, "close"),
+    MFIBuilder(14),
+    MOMBuilder(3, "close"),
+    MOMBuilder(4, "volume"),
+    MOMBuilder(1, "close"),
+    MOMBuilder(1, "volume"),
+    MABuilder(200, AvgType.EMA, "close"),
+    MABuilder(100, AvgType.EMA, "close"),
+    MABuilder(50, AvgType.EMA, "close"),
+    MABuilder(25, AvgType.EMA, "close"),
+    MABuilder(15, AvgType.EMA, "close"),
+    MABuilder(10, AvgType.EMA, "close"),
+    MABuilder(5, AvgType.EMA, "close"),
+    MABuilder(2, AvgType.EMA, "close"),
+    ROCRBuilder(12, "close"),
+    ROCRBuilder(3, "close"),
+    RSIBuilder(12, "close"),
+    RSIBuilder(6, "close"),
+    TrendStatsBuilder())
 }
 
 /**
@@ -49,7 +66,7 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
   var isTrendUp:Boolean = false
   var current: Trend = _
 
-  def analyzeNext(day: RawMarketDay, indicators: List[IndicatorSettings]): Unit = {
+  def analyzeNext(day: RawMarketDay, indicators: Set[IndicatorBuilder]): Unit = {
     rawDays.append(day)
 
     trend()

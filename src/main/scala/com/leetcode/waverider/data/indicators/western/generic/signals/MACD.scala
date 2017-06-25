@@ -1,6 +1,6 @@
 package com.leetcode.waverider.data.indicators.western.generic.signals
 
-import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.{Core, MInteger, RetCode}
@@ -10,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Ben on 4/18/2017.
   */
-class MACD(val settings: MACDSettings) extends Writable {
+class MACD(val settings: MACDBuilder) extends Writable {
   var macd:Option[Double] = None
   var macdSignal:Option[Double] = None
   var macdHist:Option[Double] = None
@@ -26,7 +26,7 @@ class MACD(val settings: MACDSettings) extends Writable {
   }
 }
 
-case class MACDSettings(slowTimePeriod: Int, fastTimePeriod:Int, signalPeriod: Int, property: String) extends IndicatorSettings {
+case class MACDBuilder(slowTimePeriod: Int, fastTimePeriod:Int, signalPeriod: Int, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val totalPeriods = slowTimePeriod + signalPeriod - 1

@@ -1,7 +1,7 @@
 package com.leetcode.waverider.data.indicators.custom
 
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
-import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.data.indicators.custom.AccelerationType.AccelerationType
 import com.leetcode.waverider.data.indicators.custom.TrendDirection.TrendDirection
 import com.leetcode.waverider.utils.LastNQueue
@@ -25,7 +25,7 @@ class TrendStats extends Trend(None, None, None, None) {
   var acceleration:Option[AccelerationType] = None
 }
 
-case class TrendStatsBuilder() extends IndicatorSettings {
+case class TrendStatsBuilder() extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay],
                                     last100Trends:LastNQueue[Trend], current: Trend): Writable = {
     val stats = new TrendStats()

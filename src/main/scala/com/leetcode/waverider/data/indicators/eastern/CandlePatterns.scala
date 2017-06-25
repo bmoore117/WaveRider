@@ -1,6 +1,6 @@
 package com.leetcode.waverider.data.indicators.eastern
 
-import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.{Core, MInteger}
@@ -19,7 +19,7 @@ class CandlePatterns extends Writable {
   var names:List[String] = Nil
 }
 
-case class CandlePatternsBuilder(timePeriod: Int) extends IndicatorSettings {
+case class CandlePatternsBuilder(timePeriod: Int) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
 

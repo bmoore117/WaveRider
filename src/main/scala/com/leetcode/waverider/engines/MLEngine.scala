@@ -28,7 +28,7 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
 
   var network:MultiLayerNetwork = _
 
-  def train(): Unit = {
+  def train(): Double = {
 
     val trainIterator = getTrainingSet()
     val testIterator = getTestSet()
@@ -79,9 +79,11 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
 
     println("Train set price RMSE: " + trainResults.rootMeanSquaredError(0))
     println("Train set duration RMSE: " + trainResults.rootMeanSquaredError(1))
+
+    1
   }
 
-  def getTrainingSet(): DataSetIterator = {
+  private def getTrainingSet(): DataSetIterator = {
     val trainReader = new CSVRecordReader(1, ",")
     trainReader.initialize(new FileSplit(new File(trainPath)))
     val trainIterator = new RecordReaderDataSetIterator(trainReader, 100, numFeatures, numFeatures + 1, true) //15, 16 is idx where labels begin & end
@@ -95,7 +97,7 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
     trainIterator
   }
 
-  def getTestSet(): DataSetIterator = {
+  private def getTestSet(): DataSetIterator = {
     val testReader = new CSVRecordReader(1, ",")
     testReader.initialize(new FileSplit(new File(testPath)))
     val testIterator = new RecordReaderDataSetIterator(testReader, 100, numFeatures, numFeatures + 1, true) //15, 16 is idx where labels begin & end

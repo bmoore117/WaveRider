@@ -1,7 +1,7 @@
 package com.leetcode.waverider.data.indicators.western.typed.volume
 
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
-import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.Core
 
@@ -25,7 +25,7 @@ class OnBalanceVolume extends Writable {
   }
 }
 
-case class OnBalanceVolumeSettings() extends IndicatorSettings {
+case class OBVBuilder() extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val todayOBV = new OnBalanceVolume

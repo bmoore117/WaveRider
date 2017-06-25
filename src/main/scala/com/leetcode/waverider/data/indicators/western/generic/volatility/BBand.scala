@@ -1,6 +1,6 @@
 package com.leetcode.waverider.data.indicators.western.generic.volatility
 
-import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.{Core, MAType, MInteger, RetCode}
@@ -10,13 +10,13 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Benjamin on 4/15/2017.
   */
-class BBand(settings: BBandSettings) extends Writable {
+class BBand(settings: BBandBuilder) extends Writable {
 
   var upperBand:Option[Double] = None
   var avg:Option[Double] = None
   var lowerBand:Option[Double] = None
 
-  override def toString = s"BBand(upperBand=$upperBand, avg=$avg, lowerBand=$lowerBand, settings=$BBandSettings)"
+  override def toString = s"BBand(upperBand=$upperBand, avg=$avg, lowerBand=$lowerBand, settings=$BBandBuilder)"
 
   override def headers: List[String] = {
     List("BBANDUPPER", "BBANDAVG", "BBANDLOWER")
@@ -27,7 +27,7 @@ class BBand(settings: BBandSettings) extends Writable {
   }
 }
 
-case class BBandSettings(timePeriod: Int, distanceDeviations: Int, property: String) extends IndicatorSettings {
+case class BBandBuilder(timePeriod: Int, distanceDeviations: Int, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val band = new BBand(this)

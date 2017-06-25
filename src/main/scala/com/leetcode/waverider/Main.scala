@@ -1,6 +1,7 @@
 package com.leetcode.waverider
 
 import com.leetcode.waverider.adapters.impl.YahooFileAdapter
+import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.engines.{IndicatorEngine, MLEngine}
 
 /**
@@ -14,16 +15,33 @@ object Main {
       val adapter = new YahooFileAdapter()
       adapter.init(args)
 
-      val engine = new IndicatorEngine(adapter, Some(10))
+      val featureEngine = new IndicatorEngine(adapter, Some(10))
 
       var day = adapter.next()
 
-      while (day.isDefined) {
-        engine.analyzeNext(day.get, IndicatorEngine.supportedFeatures)
-        day = adapter.next()
-      }
+      var bestSubset:Set[IndicatorBuilder] = _
+      var highestScore = Double.MinValue
+      IndicatorEngine.supportedFeatures.subsets().foreach(set => {
 
-      engine.writeAnalysis()
+        val castSet = set.asInstanceOf[Set[IndicatorBuilder]]
+        while (day.isDefined) {
+          featureEngine.analyzeNext(day.get, castSet)
+          day = adapter.next()
+        }
+
+        featureEngine.writeAnalysis()
+
+        val mlEngine = new MLEngine("train.csv", "test.csv", set.size)
+
+        val score = mlEngine.train()
+        if(score > highestScore) {
+          bestSubset = castSet
+          highestScore = score
+        }
+      })
+
+      println("Best score: " + highestScore)
+      println("Features used :" + bestSubset.toString())
 
     } else if (args.length == 2) {
       //val engine = new MLEngine(args.head, args.last, IndicatorEngine.supportedFeatures.)

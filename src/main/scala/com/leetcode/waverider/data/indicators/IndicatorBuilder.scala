@@ -9,7 +9,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Ben on 6/15/2017.
   */
-trait IndicatorSettings {
+trait IndicatorBuilder {
   def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay],
                            last100Trends:LastNQueue[Trend], current: Trend): Writable
 }

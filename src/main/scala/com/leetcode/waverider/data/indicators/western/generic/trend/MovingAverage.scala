@@ -1,7 +1,7 @@
 package com.leetcode.waverider.data.indicators.western.generic.trend
 
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
-import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.data.indicators.western.generic.trend.MovingAverage.AvgType
 import com.leetcode.waverider.data.indicators.western.generic.trend.MovingAverage.AvgType.AvgType
 import com.leetcode.waverider.utils.LastNQueue
@@ -12,7 +12,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Ben on 4/18/2017.
   */
-class MovingAverage(val settings: MovingAverageSettings) extends Writable {
+class MovingAverage(val settings: MovingAverageBuilder) extends Writable {
 
   var value:Option[Double] = None
 
@@ -34,7 +34,7 @@ object MovingAverage {
   }
 }
 
-case class MovingAverageSettings(timePeriod: Int, avgType: AvgType, property: String) extends IndicatorSettings {
+case class MABuilder(timePeriod: Int, avgType: AvgType, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val ma = new MovingAverage(this)

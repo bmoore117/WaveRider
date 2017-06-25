@@ -5,7 +5,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Ben on 4/19/2017.
   */
-class AnalyzedMarketDay(val day: RawMarketDay, val indicators: List[Writable]) extends Writable {
+class AnalyzedMarketDay(val day: RawMarketDay, val indicators: Set[Writable]) extends Writable {
 
   override def toString = s"AnalyzedMarketDay($day, $indicators)"
 
@@ -25,6 +25,6 @@ class AnalyzedMarketDay(val day: RawMarketDay, val indicators: List[Writable]) e
     features.toList
   }
 
-  def getIndicatorCount:Int = {indicators.length}
+  def getIndicatorCount:Int = {indicators.size}
 
 }

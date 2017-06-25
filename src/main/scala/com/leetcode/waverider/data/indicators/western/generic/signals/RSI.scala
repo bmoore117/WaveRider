@@ -1,7 +1,7 @@
 package com.leetcode.waverider.data.indicators.western.generic.signals
 
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
-import com.leetcode.waverider.data.indicators.IndicatorSettings
+import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.{Core, MInteger, RetCode}
 
@@ -10,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Benjamin on 4/18/2017.
   */
-class RSI(val settings: RSISettings) extends Writable {
+class RSI(val settings: RSIBuilder) extends Writable {
 
   var value:Option[Double] = None
 
@@ -25,7 +25,7 @@ class RSI(val settings: RSISettings) extends Writable {
   }
 }
 
-case class RSISettings(timePeriod: Int, property: String) extends IndicatorSettings {
+case class RSIBuilder(timePeriod: Int, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val rsi = new RSI(this)
