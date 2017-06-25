@@ -42,9 +42,10 @@ case class CandlePatternsBuilder(timePeriod: Int) extends IndicatorSettings {
     val test = new Array[Float](1)
     test.getClass
 
-    core.getClass.getDeclaredMethods.foreach(m => {
-      if(m.getName.contains("cdl") && !m.getName.contains("Lookback") && !m.getParameterTypes.contains(test.getClass)) {
-
+    core.getClass.getDeclaredMethods.filter(m => m.getName.contains("cdl")
+      && !m.getName.contains("Lookback")
+      && !m.getParameterTypes.contains(test.getClass)
+    ).sortBy(m => m.getName).foreach(m => {
         if(m.getParameterCount == 9) {
           val result = new Array[Int](days.length)
           m.invoke(core, new Integer(0), new Integer(days.length - 1), open, high, low, close, new MInteger, new MInteger, result)
@@ -56,8 +57,7 @@ case class CandlePatternsBuilder(timePeriod: Int) extends IndicatorSettings {
           resultList.append(result.sum)
           nameList.append(m.getName.replace("cdl", ""))
         }
-      }
-    })
+      })
 
     val patterns = new CandlePatterns
     patterns.names = nameList.toList

@@ -32,7 +32,7 @@ case class TrendStatsBuilder() extends IndicatorSettings {
 
     val trends = last100Trends.toList
 
-    if(trends.isEmpty || current.duration.get == 0) {
+    if(trends.length < 4 || current.duration.get == 0) {
       return stats
     }
 
@@ -58,7 +58,7 @@ case class TrendStatsBuilder() extends IndicatorSettings {
     val sizeKeys = sizeDistribution.keySet.toList.sorted
     var sum = 0
     var i = 0
-    while (i < sizeKeys.length && current.pctDelta.get.abs > sizeKeys(i))  {
+    while (i < sizeKeys.length && current.pctDelta.get.abs >= sizeKeys(i))  {
       sum += sizeDistribution(sizeKeys(i))
       i += 1
     }
@@ -69,7 +69,7 @@ case class TrendStatsBuilder() extends IndicatorSettings {
     val durationKeys = durationDistribution.keySet.toList.sorted
     sum = 0
     i = 0
-    while (i < durationKeys.length && current.duration.get > durationKeys(i)) {
+    while (i < durationKeys.length && current.duration.get >= durationKeys(i)) {
       sum += durationDistribution(durationKeys(i))
       i += 1
     }
@@ -82,8 +82,16 @@ case class TrendStatsBuilder() extends IndicatorSettings {
       TrendDirection.DOWN
     }
 
+    //ensure we have enough for speed & accel formulas
+    var startIdx = current.duration.get
+    if(current.duration.get < 4) {
+      while(current.endIdx.get - startIdx < 4) {
+        startIdx -= 1
+      }
+    }
+
     //find trend acceleration
-    val days = rawDays.slice(current.startIdx.get, current.endIdx.get).map(day => day.close)
+    val days = rawDays.slice(startIdx, current.endIdx.get).map(day => day.close)
 
     val speed = days.sliding(2).map(pair => pair.last - pair.head).toList
     val acceleration = speed.sliding(2).map(pair => pair.last - pair.head).toList
@@ -94,7 +102,6 @@ case class TrendStatsBuilder() extends IndicatorSettings {
     } else {
       AccelerationType.DECREASING
     }
-
 
     stats.sizePercentile = Some(sizePercentile)
     stats.durationPercentile = Some(durationPercentile)

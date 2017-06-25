@@ -95,48 +95,48 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
     writer.close()
   }
 
+  /**
+    * With this definition, the earliest we can have a trend is 3 days. Start on the first day to record close,
+    * on the second day establish direction, on the third a reversal may occur.
+    */
   def trend(): Unit = {
     if(rawDays.length == 1) {
+
       lastInflectionIdx = 0
       startingClose = rawDays.head.close
 
-      isTrendUp = rawDays.head.close > rawDays.head.open
-      val pctChange = (rawDays.head.close - rawDays.head.open)/rawDays.head.open
-      current = new Trend(Some(0), Some(0), Some(pctChange), Some(1))
+    } else if(rawDays.length == 2) {
+
+      isTrendUp = rawDays.last.close > startingClose
+
     } else {
-      val pctChange = Some(((rawDays.last.close - startingClose)/startingClose).abs)
-      val duration = Some(rawDays.length - lastInflectionIdx)
+      val pctChange = ((rawDays.last.close - startingClose)/startingClose).abs
+      val duration = (rawDays.length - 1) - lastInflectionIdx
 
       if(isTrendUp) {
-        if(rawDays.last.close < startingClose) { // if we break trend
-
-          trendQueue.enqueue(new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1),
-            pctChange, duration))
-
-          lastInflectionIdx = rawDays.length - 1
-          startingClose = rawDays.last.close
-          isTrendUp = false
-
-          current = new Trend(Some(rawDays.length - 1), Some(rawDays.length - 1), Some(0), Some(0))
+        if(rawDays.last.close < rawDays(rawDays.length - 2).close) { // if we break trend
+          splitTrend(pctChange, duration)
         } else {
-          current = new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1), pctChange, duration)
+          current = new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1), Some(pctChange), Some(duration))
         }
       } else if(!isTrendUp) {
-        if(rawDays.last.close > startingClose) { //same
-
-          trendQueue.enqueue(new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1),
-            pctChange, duration))
-
-          lastInflectionIdx = rawDays.length - 1
-          startingClose = rawDays.last.close
-          isTrendUp = true
-
-          current = new Trend(Some(rawDays.length - 1), Some(rawDays.length - 1), Some(0), Some(0))
+        if(rawDays.last.close > rawDays(rawDays.length - 2).close) { //same
+          splitTrend(pctChange, duration)
         } else {
-          current = new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1), pctChange, duration)
+          current = new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1), Some(pctChange), Some(duration))
         }
       }
     }
+  }
+  private def splitTrend(pctChange: Double, duration: Int): Unit = {
+    trendQueue.enqueue(new Trend(Some(lastInflectionIdx), Some(rawDays.length - 1),
+      Some(pctChange), Some(duration)))
+
+    lastInflectionIdx = rawDays.length - 1
+    startingClose = rawDays.last.close
+    isTrendUp = false
+
+    current = new Trend(Some(rawDays.length - 1), Some(rawDays.length - 1), Some(0), Some(0))
   }
 
   def reversal(): Unit = {
