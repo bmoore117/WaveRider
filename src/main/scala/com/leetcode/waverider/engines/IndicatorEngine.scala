@@ -28,9 +28,9 @@ object IndicatorEngine {
     MACDBuilder(12, 12, 9, "close"),
     MFIBuilder(14),
     MOMBuilder(3, "close"),
-    MOMBuilder(4, "volume"),
-    MOMBuilder(1, "close"),
-    MOMBuilder(1, "volume"),
+    MOMBuilder(3, "volume"),
+    MOMBuilder(2, "close"),
+    MOMBuilder(2, "volume"),
     MABuilder(200, AvgType.EMA, "close"),
     MABuilder(100, AvgType.EMA, "close"),
     MABuilder(50, AvgType.EMA, "close"),
@@ -90,20 +90,40 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
       TrendUtils.findEndOfTrendChanges(prices, temp)
     }).map(trend => {
       val direction = if(math.signum(trend.pctDelta.get) > 0) {
-        "YES"
+        "1"
       } else {
-        "NO"
+        "0"
       }
       new Label(List("CLASS"), List(direction))
     })
 
-    val writer = CSVWriter.open(new File("train.csv"))
-    writer.writeRow(analyzedMarketDays.head.headers ++ labels.head.headers)
+    val trainPct = (analyzedMarketDays.length * 0.8).toInt
+    val testPct = analyzedMarketDays.length - trainPct
 
-    analyzedMarketDays.indices.foreach(i => {
-      val day = analyzedMarketDays(i)
-      if(i < analyzedMarketDays.length - 1 && day.features.forall(value => !value.isEmpty)) {
-        writer.writeRow(day.features ++ labels(i).features)
+    val trainFeatures = analyzedMarketDays.take(trainPct)
+    val trainLabels = labels.take(trainPct)
+
+    val testFeatures = analyzedMarketDays.takeRight(testPct)
+    val testLabels = labels.takeRight(testPct)
+
+    var writer = CSVWriter.open(new File("train.csv"))
+    writer.writeRow(trainFeatures.head.headers ++ trainLabels.head.headers)
+
+    trainFeatures.indices.foreach(i => {
+      val day = trainFeatures(i)
+      if(i < trainFeatures.length - 1 && day.features.forall(value => !value.isEmpty)) {
+        writer.writeRow(day.features ++ trainLabels(i).features)
+      }
+    })
+    writer.close()
+
+    writer = CSVWriter.open(new File("test.csv"))
+    writer.writeRow(testFeatures.head.headers ++ testLabels.head.headers)
+
+    testFeatures.indices.foreach(i => {
+      val day = testFeatures(i)
+      if(i < testFeatures.length - 1 && day.features.forall(value => !value.isEmpty)) {
+        writer.writeRow(day.features ++ testLabels(i).features)
       }
     })
     writer.close()

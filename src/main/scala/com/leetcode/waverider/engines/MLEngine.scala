@@ -23,7 +23,7 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
 
   val seed = 12345
   val iterations = 10
-  val nEpochs = 200
+  val nEpochs = 5
   val learningRate = 0.02
 
   var network:MultiLayerNetwork = _
@@ -33,26 +33,20 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
     val trainIterator = getTrainingSet()
     val testIterator = getTestSet()
 
-    val numOutputs = 2
-    val nHidden = 15
-
     network = new MultiLayerNetwork(new NeuralNetConfiguration.Builder()
       .seed(seed)
       .iterations(iterations)
       .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
       .learningRate(learningRate)
       .weightInit(WeightInit.XAVIER)
-      .updater(Updater.ADAM)
+      .updater(Updater.NESTEROVS).momentum(0.9)
       .list()
-      .layer(0, new DenseLayer.Builder().nIn(numFeatures).nOut(numFeatures)
+      .layer(0, new DenseLayer.Builder().nIn(trainIterator.inputColumns()).nOut(trainIterator.inputColumns())
         .activation(Activation.TANH)
         .build())
-      .layer(1, new DenseLayer.Builder().nIn(numFeatures).nOut(12)
-        .activation(Activation.TANH)
-        .build())
-      .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
-        .activation(Activation.IDENTITY)
-        .nIn(12).nOut(numOutputs).build())
+      .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
+        .activation(Activation.SOFTMAX)
+        .nIn(trainIterator.inputColumns()).nOut(2).build())
       .pretrain(false).backprop(true).build()
     )
 
@@ -61,33 +55,17 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
       network.fit(trainIterator)
     }
 
-    val results = network.evaluateRegression(testIterator)
+    val results = network.evaluate(testIterator)
 
-    println("Test set price r2: " + results.correlationR2(0))
-    println("Test set duration r2: " + results.correlationR2(1))
+    println("Test set price accuracy: " + results.accuracy())
 
-    println("Test set price RMSE: " + results.rootMeanSquaredError(0))
-    println("Test set duration RMSE: " + results.rootMeanSquaredError(1))
-
-
-    println("")
-    trainIterator.reset()
-    val trainResults = network.evaluateRegression(trainIterator)
-
-    println("Train set price r2: " + trainResults.correlationR2(0))
-    println("Train set duration r2: " + trainResults.correlationR2(1))
-
-    println("Train set price RMSE: " + trainResults.rootMeanSquaredError(0))
-    println("Train set duration RMSE: " + trainResults.rootMeanSquaredError(1))
-
-    1
+    results.accuracy()
   }
 
   private def getTrainingSet(): DataSetIterator = {
     val trainReader = new CSVRecordReader(1, ",")
     trainReader.initialize(new FileSplit(new File(trainPath)))
-    val trainIterator = new RecordReaderDataSetIterator(trainReader, 100, numFeatures, numFeatures + 1, true) //15, 16 is idx where labels begin & end
-
+    val trainIterator = new RecordReaderDataSetIterator(trainReader, 100, -1, 2)
     val trainNormalizer = new NormalizerStandardize()
     trainNormalizer.fit(trainIterator)
 
@@ -100,7 +78,7 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
   private def getTestSet(): DataSetIterator = {
     val testReader = new CSVRecordReader(1, ",")
     testReader.initialize(new FileSplit(new File(testPath)))
-    val testIterator = new RecordReaderDataSetIterator(testReader, 100, numFeatures, numFeatures + 1, true) //15, 16 is idx where labels begin & end
+    val testIterator = new RecordReaderDataSetIterator(testReader, 100, -1, 2)
 
     val testNormalizer = new NormalizerStandardize()
     testNormalizer.fit(testIterator)

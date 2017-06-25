@@ -12,7 +12,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Ben on 4/18/2017.
   */
-class MovingAverage(val settings: MovingAverageBuilder) extends Writable {
+class MovingAverage(val settings: MABuilder) extends Writable {
 
   var value:Option[Double] = None
 

@@ -19,24 +19,26 @@ object Main {
 
       var day = adapter.next()
 
-      var bestSubset:Set[IndicatorBuilder] = _
+      var bestSubset:Set[IndicatorBuilder] = null
       var highestScore = Double.MinValue
       IndicatorEngine.supportedFeatures.subsets().foreach(set => {
+        if(set.nonEmpty) {
+          val castSet = set.asInstanceOf[Set[IndicatorBuilder]]
+          while (day.isDefined) {
+            featureEngine.analyzeNext(day.get, castSet)
+            day = adapter.next()
+          }
 
-        val castSet = set.asInstanceOf[Set[IndicatorBuilder]]
-        while (day.isDefined) {
-          featureEngine.analyzeNext(day.get, castSet)
-          day = adapter.next()
-        }
+          featureEngine.writeAnalysis()
 
-        featureEngine.writeAnalysis()
+          val mlEngine = new MLEngine("train.csv", "test.csv", set.size)
 
-        val mlEngine = new MLEngine("train.csv", "test.csv", set.size)
-
-        val score = mlEngine.train()
-        if(score > highestScore) {
-          bestSubset = castSet
-          highestScore = score
+          val score = mlEngine.train()
+          println("Features used :" + castSet.toString())
+          if(score > highestScore) {
+            bestSubset = castSet
+            highestScore = score
+          }
         }
       })
 
