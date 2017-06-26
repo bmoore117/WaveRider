@@ -14,3 +14,5 @@ libraryDependencies += "org.nd4j" % "nd4j-native-platform" % "0.8.0"
 libraryDependencies += "org.datavec" % "datavec-api" % "0.8.0"
 
 libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.25"
+
+libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"

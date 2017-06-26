@@ -22,7 +22,7 @@ import scala.collection.mutable.ListBuffer
 
 object IndicatorEngine {
 
-  val supportedFeatures = Set(ATRBuilder(14),
+  val supportedFeatures = Set(/*ATRBuilder(14),
     BBandBuilder(21, 2, "close"),
     CandlePatternsBuilder(10),
     MACDBuilder(12, 12, 9, "close"),
@@ -32,18 +32,18 @@ object IndicatorEngine {
     MOMBuilder(2, "close"),
     MOMBuilder(2, "volume"),
     MABuilder(200, AvgType.EMA, "close"),
-    MABuilder(100, AvgType.EMA, "close"),
+    */MABuilder(100, AvgType.EMA, "close"), /*
     MABuilder(50, AvgType.EMA, "close"),
     MABuilder(25, AvgType.EMA, "close"),
     MABuilder(15, AvgType.EMA, "close"),
     MABuilder(10, AvgType.EMA, "close"),
     MABuilder(5, AvgType.EMA, "close"),
-    MABuilder(2, AvgType.EMA, "close"),
-    ROCRBuilder(12, "close"),
+    MABuilder(2, AvgType.EMA, "close"),*/
+    ROCRBuilder(12, "close")/*,
     ROCRBuilder(3, "close"),
     RSIBuilder(12, "close"),
     RSIBuilder(6, "close"),
-    TrendStatsBuilder())
+    TrendStatsBuilder()*/)
 }
 
 /**

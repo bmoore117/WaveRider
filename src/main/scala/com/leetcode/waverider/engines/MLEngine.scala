@@ -39,7 +39,7 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
       .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
       .learningRate(learningRate)
       .weightInit(WeightInit.XAVIER)
-      .updater(Updater.NESTEROVS).momentum(0.9)
+      .updater(Updater.SGD)
       .list()
       .layer(0, new DenseLayer.Builder().nIn(trainIterator.inputColumns()).nOut(trainIterator.inputColumns())
         .activation(Activation.TANH)

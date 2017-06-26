@@ -24,13 +24,13 @@ case class ROCRBuilder(timePeriod: Int, property: String) extends IndicatorBuild
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val rocr = new ROCR(this)
 
-    if(rawDays.length >= timePeriod) {
-      val days = rawDays.takeRight(timePeriod)
+    if(rawDays.length >= timePeriod + 1) {
+      val days = rawDays.takeRight(timePeriod + 1)
       val method = days.head.getClass.getDeclaredMethod(property)
       val in = days.map(day => method.invoke(day).asInstanceOf[Number].doubleValue()).toArray
       val result = new Array[Double](1)
 
-      val retCode = core.mom(0, days.length - 1, in, timePeriod, new MInteger, new MInteger, result)
+      val retCode = core.rocR(0, days.length - 1, in, timePeriod, new MInteger, new MInteger, result)
 
       if(retCode == RetCode.Success) {
         rocr.value = Some(result.head)
