@@ -20,14 +20,14 @@ class ROCRTest {
     * For today - 1, results should be:
     * None,
     * 2,
-    * 2, 1.5,
-    * 2, 1.5, 1.33
+    * 1.5,
+    * 1.33
     *
     * For today - 2, results should be:
     * None,
     * None,
     * 3,
-    * 3, 2
+    * 2
     */
   @Test
   def testROCR(): Unit = {

@@ -17,18 +17,18 @@ class MOMTest {
 
   /**
     * Momentum formula = price(today) - price(n days ago)
-    * For today - 1, results should be:
-    * none / err,
-    * 0,
+    * For period today - 1, using sequence 1, 2, 3, 4 as data:
+    * None,
     * 1,
-    * 1, 1,
-    * 1, 1, 1
+    * 1,
+    * 1,
     *
     * For today - 2, results should be:
-    * 0,
-    * 0,
+    * None,
+    * None,
     * 2,
-    * 2, 2
+    * 2,
+    *
     */
   @Test
   def testMOM(): Unit = {
