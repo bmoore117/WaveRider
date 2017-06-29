@@ -22,8 +22,8 @@ object Main {
       var bestSubset:Set[IndicatorBuilder] = null
       var highestScore = Double.MinValue
       var i = 0
-      //IndicatorEngine.supportedFeatures.subsets().foreach(set => {
-      val set = Set(ROCRBuilder(12,"close"), RSIBuilder(12,"close"), RSIBuilder(6,"close"), MACDBuilder(26,12,9,"close"), MOMBuilder(3,"close"), ROCRBuilder(3,"close"), MOMBuilder(3,"volume"), MOMBuilder(2,"volume"), MOMBuilder(2,"close"))
+      IndicatorEngine.supportedFeatures.subsets().foreach(set => {
+      //val set = Set(ROCRBuilder(12,"close"), RSIBuilder(12,"close"), RSIBuilder(6,"close"), MACDBuilder(26,12,9,"close"), MOMBuilder(3,"close"), ROCRBuilder(3,"close"), MOMBuilder(3,"volume"), MOMBuilder(2,"volume"), MOMBuilder(2,"close"))
         if(set.nonEmpty) {
           val castSet = set.asInstanceOf[Set[IndicatorBuilder]]
 
@@ -48,7 +48,7 @@ object Main {
           }
           i += 1
         }
-      //})
+      })
 
       println("Best score: " + highestScore)
       println("Features used :" + bestSubset.toString())

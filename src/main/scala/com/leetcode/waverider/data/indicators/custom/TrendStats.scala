@@ -1,9 +1,7 @@
 package com.leetcode.waverider.data.indicators.custom
 
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorBuilder
-import com.leetcode.waverider.data.indicators.custom.AccelerationType.AccelerationType
-import com.leetcode.waverider.data.indicators.custom.TrendDirection.TrendDirection
+import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.Core
 
@@ -21,11 +19,15 @@ class TrendStats extends Trend(None, None, None, None) {
 
   var sizePercentile:Option[Double] = None
   var durationPercentile:Option[Double] = None
-  var direction:Option[TrendDirection] = None
-  var acceleration:Option[AccelerationType] = None
+  var direction:Option[Int] = None
+  var acceleration:Option[Int] = None
 }
 
 case class TrendStatsBuilder() extends IndicatorBuilder {
+
+  private val ONE = 1
+  private val MINUS_ONE = -1
+
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay],
                                     last100Trends:LastNQueue[Trend], current: Trend): Writable = {
     val stats = new TrendStats()
@@ -77,9 +79,9 @@ case class TrendStatsBuilder() extends IndicatorBuilder {
 
     //find basic trend direction
     val direction = if(math.signum(current.pctDelta.get) > 0) {
-      TrendDirection.UP
+      ONE
     } else {
-      TrendDirection.DOWN
+      MINUS_ONE
     }
 
     //ensure we have enough for speed & accel formulas
@@ -98,9 +100,9 @@ case class TrendStatsBuilder() extends IndicatorBuilder {
     val force = acceleration.sliding(2).map(pair => pair.last - pair.head).toList
 
     val accelerationType = if(force.last > force.head) {
-      AccelerationType.INCREASING
+      ONE
     } else {
-      AccelerationType.DECREASING
+      MINUS_ONE
     }
 
     stats.sizePercentile = Some(sizePercentile)
@@ -110,14 +112,4 @@ case class TrendStatsBuilder() extends IndicatorBuilder {
 
     stats
   }
-}
-
-object TrendDirection extends Enumeration {
-  val UP, DOWN = Value
-  type TrendDirection = Value
-}
-
-object AccelerationType extends Enumeration {
-  val INCREASING, DECREASING = Value
-  type AccelerationType = Value
 }
