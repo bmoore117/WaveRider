@@ -10,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Ben on 4/17/2017.
   */
-class AvgTrueRange(val settings: ATRBuilder) extends Writable{
+class ATR(val settings: ATRBuilder) extends Writable{
   var value:Option[Double] = None
 
   override def headers: List[String] = {
@@ -25,11 +25,11 @@ class AvgTrueRange(val settings: ATRBuilder) extends Writable{
 case class ATRBuilder(timePeriod: Int) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
-    val atr = new AvgTrueRange(this)
+    val atr = new ATR(this)
 
     //strictly greater than, as we need 15 points for a 14 day ATR: we need 1 point past the last, as TR requires it
     if(rawDays.length > timePeriod) {
-      val days = rawDays.takeRight(timePeriod)
+      val days = rawDays.takeRight(timePeriod + 1)
 
       val highs = days.map(day => day.high).toArray
       val lows = days.map(day => day.low).toArray

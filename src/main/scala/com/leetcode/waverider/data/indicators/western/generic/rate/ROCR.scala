@@ -24,7 +24,7 @@ case class ROCRBuilder(timePeriod: Int, property: String) extends IndicatorBuild
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val rocr = new ROCR(this)
 
-    if(rawDays.length >= timePeriod + 1) {
+    if(rawDays.length > timePeriod) {
       val days = rawDays.takeRight(timePeriod + 1)
       val method = days.head.getClass.getDeclaredMethod(property)
       val in = days.map(day => method.invoke(day).asInstanceOf[Number].doubleValue()).toArray

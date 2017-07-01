@@ -93,13 +93,14 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
 
     //need to further break these down into a categorical: Trend up or down, for classification
     val labels = (if(trendWindowToPredict.isDefined) {
+      val results = TrendUtils.buildTrendData(prices, trendWindowToPredict.get) //fixed-window trend
       analyzedMarketDays = analyzedMarketDays.dropRight(trendWindowToPredict.get)
-      TrendUtils.buildTrendData(prices, trendWindowToPredict.get) //fixed-window trend
+      results
     } else {
       val temp = TrendUtils.buildTrendData(prices) //instantaneous trend, i.e. hard mode prediction
       TrendUtils.findEndOfTrendChanges(prices, temp)
     }).map(trend => {
-      val direction = if(math.signum(trend.pctDelta.get) > 0) {
+      val direction = if(trend.pctDelta.get > 0.05) {
         "1"
       } else {
         "0"

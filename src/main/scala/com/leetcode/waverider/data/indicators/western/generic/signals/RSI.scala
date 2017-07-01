@@ -32,7 +32,7 @@ case class RSIBuilder(timePeriod: Int, property: String) extends IndicatorBuilde
 
     //must include 1 extra day, as first element in array needs a prior element
     if(rawDays.length > timePeriod) {
-      val days = rawDays.takeRight(timePeriod)
+      val days = rawDays.takeRight(timePeriod + 1)
       val method = days.head.getClass.getDeclaredMethod(property)
       val in = days.map(day => method.invoke(day).asInstanceOf[Number].doubleValue()).toArray
       val result = new Array[Double](1)

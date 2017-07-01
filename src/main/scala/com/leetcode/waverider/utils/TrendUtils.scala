@@ -126,7 +126,7 @@ object TrendUtils {
         val start = prices(i)
         val end = prices(i + trendDuration)
 
-        val trend = end / start - 1 // - 1 for 100%
+        val trend = (end - start)/start
         trends.append(new Trend(Some(i), Some(i + trendDuration), Some(trend), Some(trendDuration)))
       }
     })

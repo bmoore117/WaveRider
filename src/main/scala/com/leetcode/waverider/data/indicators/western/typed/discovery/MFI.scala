@@ -23,8 +23,8 @@ case class MFIBuilder(timePeriod:Int) extends IndicatorBuilder {
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val mfi = new MFI(this)
 
-    if(rawDays.length >= timePeriod) {
-      val days = rawDays.takeRight(timePeriod)
+    if(rawDays.length > timePeriod) {
+      val days = rawDays.takeRight(timePeriod + 1)
 
       val high = new Array[Double](days.length)
       val low = new Array[Double](days.length)
