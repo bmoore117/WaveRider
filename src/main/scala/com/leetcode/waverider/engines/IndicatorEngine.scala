@@ -92,25 +92,25 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
     })
 
     //for convenience adding labels in to main data list
-    analyzedMarketDays.indices.map(i => {
+    var data = analyzedMarketDays.indices.map(i => {
       val day = analyzedMarketDays(i)
       new AnalyzedMarketDay(day.day, day.indicators + labels(i))
     })
 
     //shuffle to help prevent validation set from having higher accuracy than training set
-    analyzedMarketDays = Random.shuffle(analyzedMarketDays)
+    data = Random.shuffle(data)
 
-    val trainAmt = (analyzedMarketDays.length * 0.7).toInt
-    val validateAmt = ((analyzedMarketDays.length - trainAmt) / 2.0).toInt
-    val testAmt = analyzedMarketDays.length - trainAmt - validateAmt
+    val trainAmt = (data.length * 0.7).toInt
+    val validateAmt = ((data.length - trainAmt) / 2.0).toInt
+    val testAmt = data.length - trainAmt - validateAmt
 
-    val trainData = analyzedMarketDays.take(trainAmt)
-    analyzedMarketDays = analyzedMarketDays.drop(trainAmt)
+    val trainData = data.take(trainAmt)
+    data = data.drop(trainAmt)
 
-    val validateData = analyzedMarketDays.take(validateAmt)
-    analyzedMarketDays = analyzedMarketDays.drop(validateAmt)
+    val validateData = data.take(validateAmt)
+    data = data.drop(validateAmt)
 
-    val testData = analyzedMarketDays.take(testAmt)
+    val testData = data.take(testAmt)
 
     var writer = CSVWriter.open(new File("train.csv"))
     writer.writeRow(trainData.head.headers)
