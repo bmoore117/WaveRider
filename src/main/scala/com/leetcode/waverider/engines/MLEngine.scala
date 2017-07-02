@@ -2,7 +2,6 @@ package com.leetcode.waverider.engines
 
 import java.io.File
 
-import com.leetcode.waverider.data.AnalyzedMarketDay
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader
 import org.datavec.api.split.FileSplit
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator
@@ -29,7 +28,6 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
   var network:MultiLayerNetwork = _
 
   def train(): Double = {
-
     val trainIterator = getTrainingSet()
     val testIterator = getTestSet()
 
@@ -40,6 +38,7 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
       .learningRate(learningRate)
       .weightInit(WeightInit.XAVIER)
       .updater(Updater.SGD)
+      .regularization(true).l2(0.1)
       .list()
       .layer(0, new DenseLayer.Builder().nIn(trainIterator.inputColumns()).nOut(trainIterator.inputColumns())
         .activation(Activation.TANH)
@@ -50,15 +49,17 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
       .pretrain(false).backprop(true).build()
     )
 
-    for(i <- 1 to nEpochs) {
+    for(_ <- 1 to nEpochs) {
       trainIterator.reset()
       network.fit(trainIterator)
     }
 
-    val results = network.evaluate(testIterator)
+    trainIterator.reset()
+    var results = network.evaluate(trainIterator)
+    println("Train set price accuracy: " + results.accuracy())
 
+    results = network.evaluate(testIterator)
     println("Test set price accuracy: " + results.accuracy())
-
     results.accuracy()
   }
 
@@ -88,6 +89,4 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
 
     testIterator
   }
-
-
 }

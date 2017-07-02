@@ -34,7 +34,7 @@ object Main {
           featureEngine.writeAnalysis()
           featureEngine.reset()
 
-          val mlEngine = new MLEngine("train.csv", "test.csv", set.size)
+          val mlEngine = new MLEngine("train.csv", "validate.csv", set.size)
 
           val score = mlEngine.train()
           println("Features used :" + castSet.toString())

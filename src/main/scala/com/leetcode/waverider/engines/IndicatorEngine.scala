@@ -19,6 +19,7 @@ import com.leetcode.waverider.utils.{LastNQueue, TrendUtils}
 import com.tictactec.ta.lib.Core
 
 import scala.collection.mutable.ListBuffer
+import scala.util.Random
 
 object IndicatorEngine {
 
@@ -54,7 +55,6 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
   var isTrendUp:Boolean = false
   var current: Trend = _
 
-
   def reset(): Unit = {
     rawDays.clear()
     analyzedMarketDays.clear()
@@ -78,16 +78,11 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
 
   def writeAnalysis(): Unit = {
     val prices = rawDays.map(day => day.close).toList
+    val labels = TrendUtils.buildTrendData(prices, trendWindowToPredict.get) //fixed-window trend
+    analyzedMarketDays = analyzedMarketDays.dropRight(trendWindowToPredict.get) //adjust to match labels length
 
     //need to further break these down into a categorical: Trend up or down, for classification
-    val labels = (if(trendWindowToPredict.isDefined) {
-      val results = TrendUtils.buildTrendData(prices, trendWindowToPredict.get) //fixed-window trend
-      analyzedMarketDays = analyzedMarketDays.dropRight(trendWindowToPredict.get)
-      results
-    } else {
-      val temp = TrendUtils.buildTrendData(prices) //instantaneous trend, i.e. hard mode prediction
-      TrendUtils.findEndOfTrendChanges(prices, temp)
-    }).map(trend => {
+    labels.map(trend => {
       val direction = if(trend.pctDelta.get > 0.05) {
         "1"
       } else {
@@ -96,33 +91,53 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
       new Label(List("CLASS"), List(direction))
     })
 
-    val trainPct = (analyzedMarketDays.length * 0.8).toInt
-    val testPct = analyzedMarketDays.length - trainPct
+    //for convenience adding labels in to main data list
+    analyzedMarketDays.indices.map(i => {
+      val day = analyzedMarketDays(i)
+      new AnalyzedMarketDay(day.day, day.indicators + labels(i))
+    })
 
-    val trainFeatures = analyzedMarketDays.take(trainPct)
-    val trainLabels = labels.take(trainPct)
+    //shuffle to help prevent validation set from having higher accuracy than training set
+    analyzedMarketDays = Random.shuffle(analyzedMarketDays)
 
-    val testFeatures = analyzedMarketDays.takeRight(testPct)
-    val testLabels = labels.takeRight(testPct)
+    val trainAmt = (analyzedMarketDays.length * 0.7).toInt
+    val validateAmt = ((analyzedMarketDays.length - trainAmt) / 2.0).toInt
+    val testAmt = analyzedMarketDays.length - trainAmt - validateAmt
+
+    val trainData = analyzedMarketDays.take(trainAmt)
+    analyzedMarketDays = analyzedMarketDays.drop(trainAmt)
+
+    val validateData = analyzedMarketDays.take(validateAmt)
+    analyzedMarketDays = analyzedMarketDays.drop(validateAmt)
+
+    val testData = analyzedMarketDays.take(testAmt)
 
     var writer = CSVWriter.open(new File("train.csv"))
-    writer.writeRow(trainFeatures.head.headers ++ trainLabels.head.headers)
+    writer.writeRow(trainData.head.headers)
+    trainData.indices.foreach(i => {
+      val day = trainData(i)
+      if(i < trainData.length - 1 && day.features.forall(value => !value.isEmpty)) {
+        writer.writeRow(day.features)
+      }
+    })
+    writer.close()
 
-    trainFeatures.indices.foreach(i => {
-      val day = trainFeatures(i)
-      if(i < trainFeatures.length - 1 && day.features.forall(value => !value.isEmpty)) {
-        writer.writeRow(day.features ++ trainLabels(i).features)
+    writer = CSVWriter.open(new File("validate.csv"))
+    writer.writeRow(validateData.head.headers)
+    validateData.indices.foreach(i => {
+      val day = validateData(i)
+      if(i < validateData.length - 1 && day.features.forall(value => !value.isEmpty)) {
+        writer.writeRow(day.features)
       }
     })
     writer.close()
 
     writer = CSVWriter.open(new File("test.csv"))
-    writer.writeRow(testFeatures.head.headers ++ testLabels.head.headers)
-
-    testFeatures.indices.foreach(i => {
-      val day = testFeatures(i)
-      if(i < testFeatures.length - 1 && day.features.forall(value => !value.isEmpty)) {
-        writer.writeRow(day.features ++ testLabels(i).features)
+    writer.writeRow(testData.head.headers)
+    testData.indices.foreach(i => {
+      val day = testData(i)
+      if(i < testData.length - 1 && day.features.forall(value => !value.isEmpty)) {
+        writer.writeRow(day.features)
       }
     })
     writer.close()
