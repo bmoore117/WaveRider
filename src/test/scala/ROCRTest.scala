@@ -31,10 +31,10 @@ class ROCRTest {
     */
   @Test
   def testROCR(): Unit = {
-    val day1 = new RawMarketDay(new Date(), 0.0, 0.0, 0.0, 1.0, 0, 0.0)
-    val day2 = new RawMarketDay(new Date(), 0.0, 0.0, 0.0, 2.0, 0, 0.0)
-    val day3 = new RawMarketDay(new Date(), 0.0, 0.0, 0.0, 3.0, 0, 0.0)
-    val day4 = new RawMarketDay(new Date(), 0.0, 0.0, 0.0, 4.0, 0, 0.0)
+    val day1 = new RawMarketDay("", 0.0, 0.0, 0.0, 1.0, 0, 0.0)
+    val day2 = new RawMarketDay("", 0.0, 0.0, 0.0, 2.0, 0, 0.0)
+    val day3 = new RawMarketDay("", 0.0, 0.0, 0.0, 3.0, 0, 0.0)
+    val day4 = new RawMarketDay("", 0.0, 0.0, 0.0, 4.0, 0, 0.0)
     val slice1 = ListBuffer(day1)
     val slice2 = ListBuffer(day1, day2)
     val slice3 = ListBuffer(day1, day2, day3)

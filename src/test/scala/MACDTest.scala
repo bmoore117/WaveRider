@@ -80,7 +80,7 @@ class MACDTest {
   def getUndersized(): ListBuffer[RawMarketDay] = {
     val buffer = new ListBuffer[RawMarketDay]
     for(i <- 1 to 20) {
-      buffer.append(new RawMarketDay(new Date(), 0.0, 0.0, 0.0, i.toDouble, 0, 0.0))
+      buffer.append(new RawMarketDay("", 0.0, 0.0, 0.0, i.toDouble, 0, 0.0))
     }
 
     buffer
@@ -89,7 +89,7 @@ class MACDTest {
   def getProperSized(): ListBuffer[RawMarketDay] = {
     val buffer = new ListBuffer[RawMarketDay]
     for(i <- 1 to 34) {
-      buffer.append(new RawMarketDay(new Date(), 0.0, 0.0, 0.0, i.toDouble, 0, 0.0))
+      buffer.append(new RawMarketDay("", 0.0, 0.0, 0.0, i.toDouble, 0, 0.0))
     }
 
     buffer
@@ -98,7 +98,7 @@ class MACDTest {
   def getPlusSized(): ListBuffer[RawMarketDay] = {
     val buffer = new ListBuffer[RawMarketDay]
     for(i <- 1 to 35) {
-      buffer.append(new RawMarketDay(new Date(), 0.0, 0.0, 0.0, i.toDouble, 0, 0.0))
+      buffer.append(new RawMarketDay("", 0.0, 0.0, 0.0, i.toDouble, 0, 0.0))
     }
 
     buffer

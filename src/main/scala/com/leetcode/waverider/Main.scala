@@ -4,6 +4,8 @@ import com.leetcode.waverider.adapters.impl.YahooFileAdapter
 import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.engines.{IndicatorEngine, MLEngine}
 
+import scala.collection.immutable.ListSet
+
 /**
   * Created by Ben on 4/22/2017.
   */
@@ -22,7 +24,7 @@ object Main {
       var i = 0
       IndicatorEngine.supportedFeatures.subsets().foreach(set => {
         if(set.nonEmpty) {
-          val castSet = set.asInstanceOf[Set[IndicatorBuilder]]
+          val castSet = set.asInstanceOf[ListSet[IndicatorBuilder]]
 
           adapter.reset()
           var day = adapter.next()

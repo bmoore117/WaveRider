@@ -1,11 +1,12 @@
 package com.leetcode.waverider.data
 
+import scala.collection.immutable.ListSet
 import scala.collection.mutable.ListBuffer
 
 /**
   * Created by Ben on 4/19/2017.
   */
-class AnalyzedMarketDay(val day: RawMarketDay, val indicators: Set[Writable]) extends Writable {
+class AnalyzedMarketDay(val day: RawMarketDay, val indicators: ListSet[Writable]) extends Writable {
 
   override def toString = s"AnalyzedMarketDay($day, $indicators)"
 

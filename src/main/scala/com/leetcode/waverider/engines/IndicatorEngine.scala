@@ -18,13 +18,17 @@ import com.leetcode.waverider.data.{AnalyzedMarketDay, Label, RawMarketDay, Tren
 import com.leetcode.waverider.utils.{LastNQueue, TrendUtils}
 import com.tictactec.ta.lib.Core
 
+import scala.collection.immutable.ListSet
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 object IndicatorEngine {
 
-  val supportedFeatures = Set(
-    CandlePatternsBuilder(10),
+  val supportedFeatures = ListSet(
+
+    RSIBuilder(12, "close")
+
+    /*CandlePatternsBuilder(10),
     MFIBuilder(14),
     MOMBuilder(3, "close"),
     MOMBuilder(3, "volume"),
@@ -32,7 +36,9 @@ object IndicatorEngine {
     ROCRBuilder(3, "close"),
     RSIBuilder(12, "close"),
     RSIBuilder(6, "close"),
-    TrendStatsBuilder())
+    TrendStatsBuilder()*/
+
+  )
 }
 
 /**
@@ -64,7 +70,7 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
     current = null
   }
 
-  def analyzeNext(day: RawMarketDay, indicators: Set[IndicatorBuilder]): Unit = {
+  def analyzeNext(day: RawMarketDay, indicators: ListSet[IndicatorBuilder]): Unit = {
     rawDays.append(day)
 
     trend()
@@ -78,11 +84,11 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
 
   def writeAnalysis(): Unit = {
     val prices = rawDays.map(day => day.close).toList
-    val labels = TrendUtils.buildTrendData(prices, trendWindowToPredict.get) //fixed-window trend
+    val trends = TrendUtils.buildTrendData(prices, trendWindowToPredict.get) //fixed-window trend
     analyzedMarketDays = analyzedMarketDays.dropRight(trendWindowToPredict.get) //adjust to match labels length
 
     //need to further break these down into a categorical: Trend up or down, for classification
-    labels.map(trend => {
+    val labels = trends.map(trend => {
       val direction = if(trend.pctDelta.get > 0.05) {
         "1"
       } else {
@@ -94,6 +100,7 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
     //for convenience adding labels in to main data list
     var data = analyzedMarketDays.indices.map(i => {
       val day = analyzedMarketDays(i)
+
       new AnalyzedMarketDay(day.day, day.indicators + labels(i))
     })
 
@@ -101,8 +108,8 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
     data = Random.shuffle(data)
 
     val trainAmt = (data.length * 0.7).toInt
-    val validateAmt = ((data.length - trainAmt) / 2.0).toInt
-    val testAmt = data.length - trainAmt - validateAmt
+    val validateAmt = ((data.length - trainAmt)).toInt
+    //val testAmt = data.length - trainAmt - validateAmt
 
     val trainData = data.take(trainAmt)
     data = data.drop(trainAmt)
@@ -110,7 +117,7 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
     val validateData = data.take(validateAmt)
     data = data.drop(validateAmt)
 
-    val testData = data.take(testAmt)
+    //val testData = data.take(testAmt)
 
     var writer = CSVWriter.open(new File("train.csv"))
     writer.writeRow(trainData.head.headers)
@@ -132,7 +139,7 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
     })
     writer.close()
 
-    writer = CSVWriter.open(new File("test.csv"))
+    /*writer = CSVWriter.open(new File("test.csv"))
     writer.writeRow(testData.head.headers)
     testData.indices.foreach(i => {
       val day = testData(i)
@@ -140,7 +147,7 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
         writer.writeRow(day.features)
       }
     })
-    writer.close()
+    writer.close()*/
   }
 
   /**
