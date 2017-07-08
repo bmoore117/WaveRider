@@ -19,22 +19,8 @@ class CandlePatterns extends Writable {
   var names:List[String] = Nil
 }
 
-case class CandlePatternsBuilder(timePeriod: Int) extends IndicatorBuilder {
+case class CandlePatternsBuilder() extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
-    val days = rawDays.slice(rawDays.length - timePeriod, rawDays.length)
-
-    val high = new Array[Double](days.length)
-    val low = new Array[Double](days.length)
-    val close = new Array[Double](days.length)
-    val open = new Array[Double](days.length)
-
-    days.indices.foreach(i => {
-      val day = days(i)
-      high(i) = day.high
-      low(i) = day.low
-      close(i) = day.close
-      open(i) = day.open
-    })
 
     val resultList = new ArrayBuffer[Int]()
     val nameList = new ListBuffer[String]()
@@ -46,18 +32,42 @@ case class CandlePatternsBuilder(timePeriod: Int) extends IndicatorBuilder {
       && !m.getName.contains("Lookback")
       && !m.getParameterTypes.contains(test.getClass)
     ).sortBy(m => m.getName).foreach(m => {
-        if(m.getParameterCount == 9) {
-          val result = new Array[Int](days.length)
-          m.invoke(core, new Integer(0), new Integer(days.length - 1), open, high, low, close, new MInteger, new MInteger, result)
-          resultList.append(result.sum)
-          nameList.append(m.getName.replace("cdl", ""))
-        } else if(m.getParameterCount == 10) {
-          val result = new Array[Int](days.length)
-          m.invoke(core, new Integer(0), new Integer(days.length - 1), open, high, low, close, new java.lang.Double(Double.MinValue), new MInteger, new MInteger, result)
-          resultList.append(result.sum)
-          nameList.append(m.getName.replace("cdl", ""))
-        }
+
+      val lookbackMethod = core.getClass.getDeclaredMethods.filter(method => method.getName.equals(m.getName + "Lookback")).head
+
+      val lookbackPeriod = if(lookbackMethod.getParameterCount > 0) {
+        lookbackMethod.invoke(core, new java.lang.Double(Double.MinValue)).asInstanceOf[Int] + 1
+      } else {
+        lookbackMethod.invoke(core).asInstanceOf[Int] + 1
+      }
+
+      val days = rawDays.slice(rawDays.length - lookbackPeriod, rawDays.length)
+
+      val high = new Array[Double](days.length)
+      val low = new Array[Double](days.length)
+      val close = new Array[Double](days.length)
+      val open = new Array[Double](days.length)
+
+      days.indices.foreach(i => {
+        val day = days(i)
+        high(i) = day.high
+        low(i) = day.low
+        close(i) = day.close
+        open(i) = day.open
       })
+
+      if(m.getParameterCount == 9) {
+        val result = new Array[Int](days.length)
+        m.invoke(core, new Integer(0), new Integer(days.length - 1), open, high, low, close, new MInteger, new MInteger, result)
+        resultList.append(result.sum)
+        nameList.append(m.getName.replace("cdl", ""))
+      } else if(m.getParameterCount == 10) {
+        val result = new Array[Int](days.length)
+        m.invoke(core, new Integer(0), new Integer(days.length - 1), open, high, low, close, new java.lang.Double(Double.MinValue), new MInteger, new MInteger, result)
+        resultList.append(result.sum)
+        nameList.append(m.getName.replace("cdl", ""))
+      }
+    })
 
     val patterns = new CandlePatterns
     patterns.names = nameList.toList
