@@ -2,7 +2,7 @@ package com.leetcode.waverider
 
 import com.leetcode.waverider.adapters.impl.YahooFileAdapter
 import com.leetcode.waverider.data.indicators.IndicatorBuilder
-import com.leetcode.waverider.engines.{IndicatorEngine, MLEngine}
+import com.leetcode.waverider.engines.{IndicatorEngine, MLEngine, TestEngine}
 
 import scala.collection.immutable.ListSet
 
@@ -17,7 +17,7 @@ object Main {
       val adapter = new YahooFileAdapter()
       adapter.init(args)
 
-      val featureEngine = new IndicatorEngine(adapter, Some(10))
+      val featureEngine = new IndicatorEngine(adapter, Some(2))
 
       var bestSubset:Set[IndicatorBuilder] = null
       var highestScore = Double.MinValue
@@ -36,9 +36,11 @@ object Main {
           featureEngine.writeAnalysis()
           featureEngine.reset()
 
-          val mlEngine = new MLEngine("train.csv", "validate.csv", set.size)
+          val engine = new MLEngine("train.csv", "validate.csv", set.size)
 
-          val score = mlEngine.train()
+          //val engine = new TestEngine("train.csv", "validate.csv")
+
+          val score = engine.evaluate()
           println("Features used :" + castSet.toString())
           println("Set number " + i)
           if(score > highestScore) {

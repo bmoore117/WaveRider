@@ -3,7 +3,7 @@ package com.leetcode.waverider.data.indicators.western.typed.volume
 import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.utils.LastNQueue
-import com.tictactec.ta.lib.Core
+import com.tictactec.ta.lib.{Core, MInteger}
 
 import scala.collection.mutable.ListBuffer
 
@@ -25,37 +25,24 @@ class OnBalanceVolume extends Writable {
   }
 }
 
-case class OBVBuilder() extends IndicatorBuilder {
+case class OBVBuilder(timePeriod: Int) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
                                     analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
-    val todayOBV = new OnBalanceVolume
+    val obv = new OnBalanceVolume
 
-    if(rawDays.length > 1 && analyzedDays.nonEmpty) {
+    if(rawDays.length > timePeriod) {
+      val days = rawDays.takeRight(timePeriod + 1) //+ 1 so starting day will have value
 
-      val days = rawDays.takeRight(2)
+      val close = days.map(day => day.close).toArray
+      val volume = days.map(day => day.volume.toDouble).toArray
 
-      val prices = days.map(day => day.close)
-      val volume = days.map(day => day.volume)
+      val result = Array[Double](1)
 
-      val yesterdayOBV = analyzedDays.last.indicators.find(indicator => indicator.isInstanceOf[OnBalanceVolume])
-      val yesterday = yesterdayOBV.get.asInstanceOf[OnBalanceVolume]
+      core.obv(0, days.length - 1, close, volume, new MInteger, new MInteger, result)
 
-      yesterday.value match {
-        case Some(obv) =>
-          if(prices.head > prices.last) {
-            todayOBV.value = Some(obv + volume.last)
-          } else if(prices.head < prices.last) {
-            todayOBV.value = Some(obv - volume.last)
-          }
-        case None =>
-          if(prices.head > prices.last) {
-            todayOBV.value = Some(volume.last)
-          } else if(prices.head < prices.last) {
-            todayOBV.value = Some(-volume.last)
-          }
-      }
+      obv.value = Some(result.head.toInt)
     }
 
-    todayOBV
+    obv
   }
 }

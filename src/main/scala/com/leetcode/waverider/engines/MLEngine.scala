@@ -27,26 +27,33 @@ class MLEngine(val trainPath:String, val testPath:String, val numFeatures:Int) {
 
   var network:MultiLayerNetwork = _
 
-  def train(): Double = {
+  def evaluate(): Double = {
     val trainIterator = getTrainingSet()
     val testIterator = getTestSet()
 
-    network = new MultiLayerNetwork(new NeuralNetConfiguration.Builder()
+    //val learningRateSpace = new ContinuousParameterSpace(0.0001, 0.1)
+    val network = new MultiLayerNetwork(new NeuralNetConfiguration.Builder()
       .seed(seed)
       .iterations(iterations)
       .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
       .learningRate(learningRate)
       .weightInit(WeightInit.XAVIER)
       .updater(Updater.SGD)
-      .regularization(true).l2(0.1)
+      //.regularization(true).l2(0.1)
       .list()
-      .layer(0, new DenseLayer.Builder().nIn(trainIterator.inputColumns()).nOut(trainIterator.inputColumns())
+      .layer(0, new DenseLayer.Builder().nIn(trainIterator.inputColumns()).nOut(50)
         .activation(Activation.TANH)
         .build())
-      .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
+      .layer(1, new DenseLayer.Builder().nIn(50).nOut(100)
+        .activation(Activation.TANH)
+        .build())
+      .layer(2, new DenseLayer.Builder().nIn(100).nOut(50)
+        .activation(Activation.TANH)
+        .build())
+      .layer(3, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
         .activation(Activation.SOFTMAX)
-        .nIn(trainIterator.inputColumns()).nOut(2).build())
-      .pretrain(false).backprop(true).build()
+        .nIn(50).nOut(2).build())
+        .pretrain(true).backprop(true).build()
     )
 
     for(_ <- 1 to nEpochs) {

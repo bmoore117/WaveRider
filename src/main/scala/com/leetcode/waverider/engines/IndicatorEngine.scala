@@ -4,7 +4,7 @@ import java.io.File
 
 import com.github.tototoshi.csv._
 import com.leetcode.waverider.adapters.Adapter
-import com.leetcode.waverider.data.indicators.IndicatorBuilder
+import com.leetcode.waverider.data.indicators.{IndicatorBuilder, PriceActionSetBuilder}
 import com.leetcode.waverider.data.indicators.custom.TrendStatsBuilder
 import com.leetcode.waverider.data.indicators.eastern.CandlePatternsBuilder
 import com.leetcode.waverider.data.indicators.western.generic.rate.{MOMBuilder, ROCRBuilder}
@@ -26,10 +26,10 @@ object IndicatorEngine {
 
   val supportedFeatures = ListSet(
 
-    RSIBuilder(12, "close")
-
-    /*CandlePatternsBuilder(10),
-    MFIBuilder(14),
+    //TrendStatsBuilder()
+    PriceActionSetBuilder()
+    //CandlePatternsBuilder()
+    /*MFIBuilder(14),
     MOMBuilder(3, "close"),
     MOMBuilder(3, "volume"),
     ROCRBuilder(12, "close"),
@@ -89,7 +89,7 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
 
     //need to further break these down into a categorical: Trend up or down, for classification
     val labels = trends.map(trend => {
-      val direction = if(trend.pctDelta.get > 0.05) {
+      val direction = if(trend.pctDelta.get > 0) {
         "1"
       } else {
         "0"
