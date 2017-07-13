@@ -28,7 +28,7 @@ case class TrendStatsBuilder() extends IndicatorBuilder {
   private val ONE = 1
   private val MINUS_ONE = -1
 
-  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay],
+  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
                                     last100Trends:LastNQueue[Trend], current: Trend): Writable = {
     val stats = new TrendStats()
 

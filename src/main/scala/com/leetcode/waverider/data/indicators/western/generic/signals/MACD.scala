@@ -28,7 +28,7 @@ class MACD(val settings: MACDBuilder) extends Writable {
 
 case class MACDBuilder(slowTimePeriod: Int, fastTimePeriod:Int, signalPeriod: Int, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+                                    last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val totalPeriods = slowTimePeriod + signalPeriod - 1
 
     val macdObj = new MACD(this)

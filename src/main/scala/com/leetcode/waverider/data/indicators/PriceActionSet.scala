@@ -1,7 +1,7 @@
 package com.leetcode.waverider.data.indicators
 
 import com.leetcode.waverider.data.indicators.western.typed.volume.{OBVBuilder, OnBalanceVolume}
-import com.leetcode.waverider.data.{AnalyzedMarketDay, RawMarketDay, Trend, Writable}
+import com.leetcode.waverider.data.{RawMarketDay, Trend, Writable}
 import com.leetcode.waverider.utils.LastNQueue
 import com.tictactec.ta.lib.Core
 
@@ -18,11 +18,11 @@ class PriceActionSet(timePeriod: Int) extends Writable {
   override def features: List[String] = signals.getOrElse(Nil).flatMap(signal => signal.features)
 }
 
-private class Signal(order: Int) extends Writable {
+class Signal(order: Int) extends Writable {
 
   var change:Option[Double] = None
   var range:Option[Double] = None
-  var obv:Option[Int] = None
+  var obv:Option[Double] = None
 
   override def headers: List[String] = List("Change" + order, "Range" + order, "OBV" + order)
 
@@ -32,13 +32,12 @@ private class Signal(order: Int) extends Writable {
 case class PriceActionSetBuilder(timePeriod: Int) extends IndicatorBuilder {
 
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay],
                                     last100Trends: LastNQueue[Trend], current: Trend): Writable = {
 
     val priceActionSet = new PriceActionSet(timePeriod)
 
-    if(rawDays.length > timePeriod) {
-      val days = rawDays.takeRight(timePeriod + 1) //+ 1 for volume
+    if(rawDays.length > timePeriod + 1) { //plus 1 added because OBV below will need it
+      val days = rawDays.takeRight(timePeriod + 1)
 
       val signals = new ListBuffer[Signal]
       for(i <- 0 until timePeriod) {
@@ -50,8 +49,8 @@ case class PriceActionSetBuilder(timePeriod: Int) extends IndicatorBuilder {
 
         val range = (HH - LL)/days.last.close
 
-        val oBVBuilder = OBVBuilder(timePeriod)
-        val obv = oBVBuilder.instantiateIndicator(core, rawDays, analyzedDays, last100Trends, current)
+        val oBVBuilder = OBVBuilder(subRange.length)
+        val obv = oBVBuilder.instantiateIndicator(core, rawDays, last100Trends, current)
           .asInstanceOf[OnBalanceVolume]
 
         val signal = new Signal(i)

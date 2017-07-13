@@ -20,7 +20,8 @@ class CandlePatterns extends Writable {
 }
 
 case class CandlePatternsBuilder() extends IndicatorBuilder {
-  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay], analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+  override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
+                                    last100Trends: LastNQueue[Trend], current: Trend): Writable = {
 
     val resultList = new ArrayBuffer[Int]()
     val nameList = new ListBuffer[String]()

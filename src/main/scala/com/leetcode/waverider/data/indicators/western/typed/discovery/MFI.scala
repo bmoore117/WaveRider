@@ -20,7 +20,7 @@ class MFI(val settings: MFIBuilder) extends Writable {
 
 case class MFIBuilder(timePeriod:Int) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+                                    last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val mfi = new MFI(this)
 
     if(rawDays.length > timePeriod) {

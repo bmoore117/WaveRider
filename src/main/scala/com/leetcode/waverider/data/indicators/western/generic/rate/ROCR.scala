@@ -21,7 +21,7 @@ class ROCR(settings: ROCRBuilder) extends Writable {
 
 case class ROCRBuilder(timePeriod: Int, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+                                   last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val rocr = new ROCR(this)
 
     if(rawDays.length > timePeriod) {

@@ -36,7 +36,7 @@ object MovingAverage {
 
 case class MABuilder(timePeriod: Int, avgType: AvgType, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+                                    last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val ma = new MovingAverage(this)
 
     if(rawDays.length >= timePeriod) {

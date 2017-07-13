@@ -24,7 +24,7 @@ class ATR(val settings: ATRBuilder) extends Writable{
 
 case class ATRBuilder(timePeriod: Int) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+                                    last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val atr = new ATR(this)
 
     //strictly greater than, as we need 15 points for a 14 day ATR: we need 1 point past the last, as TR requires it

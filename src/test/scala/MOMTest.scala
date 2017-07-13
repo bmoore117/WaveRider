@@ -42,21 +42,21 @@ class MOMTest {
     val slice4 = ListBuffer(day1, day2, day3, day4)
 
     var builder = MOMBuilder(1, "close")
-    var mom1 = builder.instantiateIndicator(core, slice1, null, null, null).asInstanceOf[MOM]
+    var mom1 = builder.instantiateIndicator(core, slice1, null, null).asInstanceOf[MOM]
     var desired = new MOM(builder)
     assertEquals(mom1.value, desired.value)
 
-    var mom2 = builder.instantiateIndicator(core, slice2, null, null, null).asInstanceOf[MOM]
+    var mom2 = builder.instantiateIndicator(core, slice2, null, null).asInstanceOf[MOM]
     desired = new MOM(builder)
     desired.value = Some(1.0)
     assertEquals(mom2.value, desired.value)
 
-    var mom3 = builder.instantiateIndicator(core, slice3, null, null, null).asInstanceOf[MOM]
+    var mom3 = builder.instantiateIndicator(core, slice3, null, null).asInstanceOf[MOM]
     desired = new MOM(builder)
     desired.value = Some(1.0)
     assertEquals(mom3.value, desired.value)
 
-    var mom4 = builder.instantiateIndicator(core, slice4, null, null, null).asInstanceOf[MOM]
+    var mom4 = builder.instantiateIndicator(core, slice4, null, null).asInstanceOf[MOM]
     desired = new MOM(builder)
     desired.value = Some(1.0)
     assertEquals(mom4.value, desired.value)
@@ -64,20 +64,20 @@ class MOMTest {
     //____________________________________________________
 
     builder = MOMBuilder(2, "close")
-    mom1 = builder.instantiateIndicator(core, slice1, null, null, null).asInstanceOf[MOM]
+    mom1 = builder.instantiateIndicator(core, slice1, null, null).asInstanceOf[MOM]
     desired = new MOM(builder)
     assertEquals(mom1.value, desired.value)
 
-    mom2 = builder.instantiateIndicator(core, slice2, null, null, null).asInstanceOf[MOM]
+    mom2 = builder.instantiateIndicator(core, slice2, null, null).asInstanceOf[MOM]
     desired = new MOM(builder)
     assertEquals(mom2.value, desired.value)
 
-    mom3 = builder.instantiateIndicator(core, slice3, null, null, null).asInstanceOf[MOM]
+    mom3 = builder.instantiateIndicator(core, slice3, null, null).asInstanceOf[MOM]
     desired = new MOM(builder)
     desired.value = Some(2.0)
     assertEquals(mom3.value, desired.value)
 
-    mom4 = builder.instantiateIndicator(core, slice4, null, null, null).asInstanceOf[MOM]
+    mom4 = builder.instantiateIndicator(core, slice4, null, null).asInstanceOf[MOM]
     desired = new MOM(builder)
     desired.value = Some(2.0)
     assertEquals(mom4.value, desired.value)

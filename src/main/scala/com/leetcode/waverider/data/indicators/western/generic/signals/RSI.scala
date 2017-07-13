@@ -27,7 +27,7 @@ class RSI(val settings: RSIBuilder) extends Writable {
 
 case class RSIBuilder(timePeriod: Int, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+                                    last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val rsi = new RSI(this)
 
     //must include 1 extra day, as first element in array needs a prior element

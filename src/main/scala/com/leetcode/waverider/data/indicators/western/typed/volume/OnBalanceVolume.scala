@@ -12,7 +12,7 @@ import scala.collection.mutable.ListBuffer
   */
 class OnBalanceVolume extends Writable {
 
-  var value:Option[Int] = None
+  var value:Option[Double] = None
 
   override def toString = s"OnBalanceVolume($value)"
 
@@ -27,7 +27,7 @@ class OnBalanceVolume extends Writable {
 
 case class OBVBuilder(timePeriod: Int) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+                                    last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val obv = new OnBalanceVolume
 
     if(rawDays.length > timePeriod) {
@@ -36,11 +36,11 @@ case class OBVBuilder(timePeriod: Int) extends IndicatorBuilder {
       val close = days.map(day => day.close).toArray
       val volume = days.map(day => day.volume.toDouble).toArray
 
-      val result = Array[Double](1)
+      val result = new Array[Double](days.length)
 
       core.obv(0, days.length - 1, close, volume, new MInteger, new MInteger, result)
 
-      obv.value = Some(result.head.toInt)
+      obv.value = Some(result.sum)
     }
 
     obv

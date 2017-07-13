@@ -61,18 +61,18 @@ class MACDTest {
     val core = new Core
 
     val builder = MACDBuilder(26, 12, 9, "close")
-    val macd1 = builder.instantiateIndicator(core, getUndersized(), null, null, null).asInstanceOf[MACD]
+    val macd1 = builder.instantiateIndicator(core, getUndersized(), null, null).asInstanceOf[MACD]
     val desired = new MACD(builder)
     assertEquals(macd1.macd, desired.macd)
     assertEquals(macd1.macdSignal, desired.macdSignal)
 
-    val macd2 = builder.instantiateIndicator(core, getProperSized(), null, null, null).asInstanceOf[MACD]
+    val macd2 = builder.instantiateIndicator(core, getProperSized(), null, null).asInstanceOf[MACD]
     desired.macdSignal = Some(7.0)
     desired.macd = Some(7.0)
     assertEquals(macd2.macdSignal, desired.macdSignal)
     assertEquals(macd2.macd, desired.macd)
 
-    val macd3 = builder.instantiateIndicator(core, getPlusSized(), null, null, null).asInstanceOf[MACD]
+    val macd3 = builder.instantiateIndicator(core, getPlusSized(), null, null).asInstanceOf[MACD]
     assertEquals(macd2.macdSignal, desired.macdSignal)
     assertEquals(macd2.macd, desired.macd)
   }

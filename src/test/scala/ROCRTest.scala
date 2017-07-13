@@ -41,41 +41,41 @@ class ROCRTest {
     val slice4 = ListBuffer(day1, day2, day3, day4)
 
     var builder = ROCRBuilder(1, "close")
-    var result1 = builder.instantiateIndicator(core, slice1, null, null, null).asInstanceOf[ROCR]
+    var result1 = builder.instantiateIndicator(core, slice1, null, null).asInstanceOf[ROCR]
     var desired = new ROCR(builder)
     assertEquals(result1.value, desired.value)
 
-    var result2 = builder.instantiateIndicator(core, slice2, null, null, null).asInstanceOf[ROCR]
+    var result2 = builder.instantiateIndicator(core, slice2, null, null).asInstanceOf[ROCR]
     desired = new ROCR(builder)
     desired.value = Some(2.0)
     assertEquals(result2.value, desired.value)
 
-    var result3 = builder.instantiateIndicator(core, slice3, null, null, null).asInstanceOf[ROCR]
+    var result3 = builder.instantiateIndicator(core, slice3, null, null).asInstanceOf[ROCR]
     desired = new ROCR(builder)
     desired.value = Some(1.5)
     assertEquals(result3.value, desired.value)
 
-    var result4 = builder.instantiateIndicator(core, slice4, null, null, null).asInstanceOf[ROCR]
+    var result4 = builder.instantiateIndicator(core, slice4, null, null).asInstanceOf[ROCR]
     desired = new ROCR(builder)
     desired.value = Some(1.3333333333333333)
     assertEquals(result4.value, desired.value)
 
     //____________________________________________________________________________
     builder = ROCRBuilder(2, "close")
-    result1 = builder.instantiateIndicator(core, slice1, null, null, null).asInstanceOf[ROCR]
+    result1 = builder.instantiateIndicator(core, slice1, null, null).asInstanceOf[ROCR]
     desired = new ROCR(builder)
     assertEquals(result1.value, desired.value)
 
-    result2 = builder.instantiateIndicator(core, slice2, null, null, null).asInstanceOf[ROCR]
+    result2 = builder.instantiateIndicator(core, slice2, null, null).asInstanceOf[ROCR]
     desired = new ROCR(builder)
     assertEquals(result2.value, desired.value)
 
-    result3 = builder.instantiateIndicator(core, slice3, null, null, null).asInstanceOf[ROCR]
+    result3 = builder.instantiateIndicator(core, slice3, null, null).asInstanceOf[ROCR]
     desired = new ROCR(builder)
     desired.value = Some(3.0)
     assertEquals(result3.value, desired.value)
 
-    result4 = builder.instantiateIndicator(core, slice4, null, null, null).asInstanceOf[ROCR]
+    result4 = builder.instantiateIndicator(core, slice4, null, null).asInstanceOf[ROCR]
     desired = new ROCR(builder)
     desired.value = Some(2.0)
     assertEquals(result4.value, desired.value)

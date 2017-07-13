@@ -27,7 +27,7 @@ object IndicatorEngine {
   val supportedFeatures = ListSet(
 
     //TrendStatsBuilder()
-    PriceActionSetBuilder()
+    PriceActionSetBuilder(4)
     //CandlePatternsBuilder()
     /*MFIBuilder(14),
     MOMBuilder(3, "close"),
@@ -77,13 +77,15 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
 
     //trend here supplies the instantaneous trend
     val results = indicators.map(indicator =>
-      indicator.instantiateIndicator(core, rawDays, analyzedMarketDays, trendQueue, current))
+      indicator.instantiateIndicator(core, rawDays, trendQueue, current))
 
     analyzedMarketDays.append(new AnalyzedMarketDay(day, results))
   }
 
   def writeAnalysis(): Unit = {
-    val prices = rawDays.map(day => day.close).toList
+
+    analyzedMarketDays = analyzedMarketDays.filter(day => day.features.nonEmpty)
+    val prices = analyzedMarketDays.map(day => day.day.close).toList
     val trends = TrendUtils.buildTrendData(prices, trendWindowToPredict.get) //fixed-window trend
     analyzedMarketDays = analyzedMarketDays.dropRight(trendWindowToPredict.get) //adjust to match labels length
 

@@ -20,7 +20,7 @@ class MOM(val settings: MOMBuilder) extends Writable {
 
 case class MOMBuilder(timePeriod: Int, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+                                    last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val mom = new MOM(this)
     if(rawDays.length > timePeriod) {
       val days = rawDays.takeRight(timePeriod + 1)

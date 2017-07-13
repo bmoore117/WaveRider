@@ -29,7 +29,7 @@ class BBand(settings: BBandBuilder) extends Writable {
 
 case class BBandBuilder(timePeriod: Int, distanceDeviations: Int, property: String) extends IndicatorBuilder {
   override def instantiateIndicator(core: Core, rawDays: ListBuffer[RawMarketDay],
-                                    analyzedDays: ListBuffer[AnalyzedMarketDay], last100Trends: LastNQueue[Trend], current: Trend): Writable = {
+                                    last100Trends: LastNQueue[Trend], current: Trend): Writable = {
     val band = new BBand(this)
 
     if(rawDays.length >= timePeriod) {

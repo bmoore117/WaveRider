@@ -17,7 +17,7 @@ object Main {
       val adapter = new YahooFileAdapter()
       adapter.init(args)
 
-      val featureEngine = new IndicatorEngine(adapter, Some(2))
+      val featureEngine = new IndicatorEngine(adapter, Some(4))
 
       var bestSubset:Set[IndicatorBuilder] = null
       var highestScore = Double.MinValue
