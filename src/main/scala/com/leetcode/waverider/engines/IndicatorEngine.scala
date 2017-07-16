@@ -27,8 +27,8 @@ object IndicatorEngine {
   val supportedFeatures = ListSet(
 
     //TrendStatsBuilder()
-    PriceActionSetBuilder(4)
-    //CandlePatternsBuilder()
+    //PriceActionSetBuilder(4)
+    CandlePatternsBuilder()
     /*MFIBuilder(14),
     MOMBuilder(3, "close"),
     MOMBuilder(3, "volume"),
@@ -109,8 +109,8 @@ class IndicatorEngine(val market: Adapter, trendWindowToPredict: Option[Int]) {
     //shuffle to help prevent validation set from having higher accuracy than training set
     data = Random.shuffle(data)
 
-    val trainAmt = (data.length * 0.7).toInt
-    val validateAmt = ((data.length - trainAmt)).toInt
+    val trainAmt = (data.length * 0.8).toInt
+    val validateAmt = (data.length - trainAmt).toInt
     //val testAmt = data.length - trainAmt - validateAmt
 
     val trainData = data.take(trainAmt)

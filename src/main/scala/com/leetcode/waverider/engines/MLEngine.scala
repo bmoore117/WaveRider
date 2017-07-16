@@ -25,7 +25,7 @@ import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator
 import org.deeplearning4j.earlystopping.EarlyStoppingConfiguration
 import org.deeplearning4j.earlystopping.saver.{InMemoryModelSaver, LocalFileModelSaver}
 import org.deeplearning4j.earlystopping.scorecalc.DataSetLossCalculator
-import org.deeplearning4j.earlystopping.termination.{MaxEpochsTerminationCondition, MaxTimeIterationTerminationCondition}
+import org.deeplearning4j.earlystopping.termination.{MaxEpochsTerminationCondition, MaxTimeIterationTerminationCondition, ScoreImprovementEpochTerminationCondition}
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.Updater
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
@@ -41,10 +41,8 @@ class MLEngine(trainPath: String, testPath: String) {
 
   val seed = 12345
   val iterations = 1
-  val epochs = 100
+  val epochs = 10
   val learningRate = 0.01
-
-  var network:MultiLayerNetwork = _
 
   def evaluate(): Double = {
     val trainIterator = getTrainingSet()
@@ -52,18 +50,16 @@ class MLEngine(trainPath: String, testPath: String) {
     val dataProvider = new DataSetIteratorProvider(trainIterator, testIterator)
 
     val learningRateSpace = new ContinuousParameterSpace(0.01, 0.7)
-    val layer1SizeSpace = new IntegerParameterSpace(trainIterator.inputColumns(), 50)
-    val layer2SizeSpace = new IntegerParameterSpace(50, 150)
-    val layer3SizeSpace = new IntegerParameterSpace(50, 256)
+    val layer1SizeSpace = new IntegerParameterSpace(trainIterator.inputColumns(), 150)
+    val layer2SizeSpace = new IntegerParameterSpace(150, 300)
 
-
-    val earlySaveDir = "earlyStoppingModels"
+    /*val earlySaveDir = "earlyStoppingModels"
     val temp = new File(earlySaveDir)
     if(temp.exists()) temp.delete()
-    temp.mkdir()
+    temp.mkdir()*/
 
     val stopConf = new EarlyStoppingConfiguration.Builder()
-      .epochTerminationConditions(new MaxEpochsTerminationCondition(epochs))
+      .epochTerminationConditions(new ScoreImprovementEpochTerminationCondition(epochs))
       .iterationTerminationConditions(new MaxTimeIterationTerminationCondition(20, TimeUnit.MINUTES))
       .scoreCalculator(new DataSetLossCalculator(testIterator, true))
       .evaluateEveryNEpochs(1)
@@ -90,30 +86,30 @@ class MLEngine(trainPath: String, testPath: String) {
         .build())
       .addLayer(new DenseLayerSpace.Builder()
         .nIn(layer2SizeSpace)
-        .nOut(layer3SizeSpace)
+        .nOut(layer1SizeSpace)
         .activation("tanh")
         .build())
       .addLayer(new OutputLayerSpace.Builder()
-        .nIn(layer3SizeSpace)
+        .nIn(layer1SizeSpace)
         .nOut(2)
         .lossFunction(LossFunctions.LossFunction.MCXENT)
         .activation("softmax")
         .build())
-      .pretrain(true).backprop(true).build()
+      .pretrain(false).backprop(true).build()
 
     val candidateGenerator = new RandomSearchGenerator(paramSpace)
 
-    val baseSaveDirectory = "arbiter"
+   /* val baseSaveDirectory = "arbiter"
     val f = new File(baseSaveDirectory)
     if(f.exists()) f.delete()
-    f.mkdir()
+    f.mkdir()*/
     val modelSaver = new InMemoryResultSaver[DL4JConfiguration, MultiLayerNetwork, Object]()
 
     val scoreFunction = new TestSetAccuracyScoreFunction()
 
     val terminationConditions = new java.util.ArrayList[TerminationCondition]()
     terminationConditions.add(new MaxTimeCondition(15, TimeUnit.MINUTES))
-    terminationConditions.add(new MaxCandidatesCondition(20))
+    terminationConditions.add(new MaxCandidatesCondition(100))
 
     val optimizationConfig = new OptimizationConfiguration.Builder()
       .candidateGenerator(candidateGenerator)
@@ -130,10 +126,10 @@ class MLEngine(trainPath: String, testPath: String) {
 
     runner.execute()
 
-    val sb = new StringBuilder()
+    /*val sb = new StringBuilder()
     sb.append("Best score: ").append(runner.bestScore()).append("\n")
       .append("Index of model with best score: ").append(runner.bestScoreCandidateIndex()).append("\n")
-      .append("Number of configurations evaluated: ").append(runner.numCandidatesCompleted()).append("\n")
+      .append("Number of configurations evaluated: ").append(runner.numCandidatesCompleted()).append("\n")*/
 
     val indexOfBestResult = runner.bestScoreCandidateIndex
     val allResults = runner.getResults
@@ -150,7 +146,7 @@ class MLEngine(trainPath: String, testPath: String) {
   }
 
   private def getTrainingSet(): DataSetIterator = {
-    val trainReader = new CSVRecordReader(0, ",")
+    val trainReader = new CSVRecordReader(1, ",")
     trainReader.initialize(new FileSplit(new File(trainPath)))
     val trainIterator = new RecordReaderDataSetIterator(trainReader, 100, -1, 2)
     val trainNormalizer = new NormalizerStandardize()
@@ -163,7 +159,7 @@ class MLEngine(trainPath: String, testPath: String) {
   }
 
   private def getTestSet(): DataSetIterator = {
-    val testReader = new CSVRecordReader(0, ",")
+    val testReader = new CSVRecordReader(1, ",")
     testReader.initialize(new FileSplit(new File(testPath)))
     val testIterator = new RecordReaderDataSetIterator(testReader, 100, -1, 2)
 

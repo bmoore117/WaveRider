@@ -1,10 +1,14 @@
 package com.leetcode.waverider
 
+import java.io.File
+
+import com.github.tototoshi.csv.{CSVReader, CSVWriter}
 import com.leetcode.waverider.adapters.impl.YahooFileAdapter
 import com.leetcode.waverider.data.indicators.IndicatorBuilder
 import com.leetcode.waverider.engines.{IndicatorEngine, MLEngine, TestEngine}
 
 import scala.collection.immutable.ListSet
+import scala.collection.mutable.ListBuffer
 
 /**
   * Created by Ben on 4/22/2017.
@@ -36,7 +40,7 @@ object Main {
           featureEngine.writeAnalysis()
           featureEngine.reset()
 
-          val engine = new MLEngine("train.csv", "validate.csv", set.size)
+          val engine = new MLEngine("train.csv", "validate.csv")
 
           //val engine = new TestEngine("train.csv", "validate.csv")
 
@@ -51,13 +55,35 @@ object Main {
         }
       })
 
-      println("Best score: " + highestScore)
-      println("Features used :" + bestSubset.toString())
+      //println("Best score: " + highestScore)
+      //println("Features used :" + bestSubset.toString())
 
     } else if (args.length == 2) {
-      //val engine = new MLEngine(args.head, args.last, IndicatorEngine.supportedFeatures.)
+      val reader = CSVReader.open(new File(args.head))
+      val buf = new ListBuffer[Seq[String]]
+      reader.iterator.foreach(day => {
+        buf.append(day)
+      })
+      reader.close()
 
-      //engine.train()
+      var result = buf.map(row => if(row.last.toDouble > 0) row.take(row.length - 1) :+ "1" else row.take(row.length - 1) :+ "0")
+
+      val trainAmt = (result.length * 0.8).toInt
+      val testAmt = result.length - trainAmt
+
+      val trainData = result.take(trainAmt)
+      result = result.drop(trainAmt)
+
+      val testData = result.take(testAmt)
+      result = result.drop(testAmt)
+
+      val trainWriter = CSVWriter.open(new File("signals.csv"))
+      trainData.foreach(row => trainWriter.writeRow(row))
+      trainWriter.close()
+
+      val testWriter = CSVWriter.open(new File("signalsTrain.csv"))
+      testData.foreach(row => testWriter.writeRow(row))
+      testWriter.close()
     }
 
     else {
